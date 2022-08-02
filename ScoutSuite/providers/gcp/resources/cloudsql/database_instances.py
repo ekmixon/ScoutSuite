@@ -28,9 +28,8 @@ class DatabaseInstances(GCPCompositeResources):
         self._set_last_backup_timestamps(self.items())
 
     def _parse_instance(self, raw_instance):
-        instance_dict = {}
+        instance_dict = {'id': get_non_provider_id(raw_instance['name'])}
 
-        instance_dict['id'] = get_non_provider_id(raw_instance['name'])
         instance_dict['name'] = raw_instance['name']
         instance_dict['project_id'] = raw_instance['project']
         instance_dict['automatic_backup_enabled'] = raw_instance['settings']['backupConfiguration']['enabled']
@@ -52,7 +51,10 @@ class DatabaseInstances(GCPCompositeResources):
             elif address['type'] == 'PRIVATE':
                 instance_dict['private_ip'] = address['ipAddress']
             else:
-                print_exception('Unknown Cloud SQL instance IP address type: {}'.format(address['type']))
+                print_exception(
+                    f"Unknown Cloud SQL instance IP address type: {address['type']}"
+                )
+
 
         return instance_dict['id'], instance_dict
 

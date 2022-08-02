@@ -15,7 +15,10 @@ class AliyunProvider(BaseProvider):
         services = [] if services is None else services
         skipped_services = [] if skipped_services is None else skipped_services
 
-        self.metadata_path = '%s/metadata.json' % os.path.split(os.path.abspath(__file__))[0]
+        self.metadata_path = (
+            f'{os.path.split(os.path.abspath(__file__))[0]}/metadata.json'
+        )
+
 
         self.provider_code = 'aliyun'
         self.provider_name = 'Alibaba Cloud'
@@ -32,10 +35,7 @@ class AliyunProvider(BaseProvider):
         """
         Returns the name of the report using the provider's configuration
         """
-        if self.account_id:
-            return f'aliyun-{self.account_id}'
-        else:
-            return 'aliyun'
+        return f'aliyun-{self.account_id}' if self.account_id else 'aliyun'
 
     def preprocessing(self, ip_ranges=None, ip_ranges_name_key=None):
 

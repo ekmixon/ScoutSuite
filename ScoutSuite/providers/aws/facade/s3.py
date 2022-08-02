@@ -17,7 +17,10 @@ class S3Facade(AWSBaseFacade):
             # as per https://github.com/nccgroup/ScoutSuite/issues/727
             buckets = []
             exception = None
-            region_list = self.regions if self.regions else await run_concurrently(lambda: self.session.get_available_regions('s3'))
+            region_list = self.regions or await run_concurrently(
+                lambda: self.session.get_available_regions('s3')
+            )
+
             for region in region_list:
                 try:
                     client = AWSFacadeUtils.get_client('s3', self.session, region)
@@ -61,11 +64,11 @@ class S3Facade(AWSBaseFacade):
         try:
             location = await run_concurrently(lambda: client.get_bucket_location(Bucket=bucket['Name']))
         except Exception as e:
-            print_exception('Failed to get bucket location for {}: {}'.format(bucket['Name'], e))
+            print_exception(f"Failed to get bucket location for {bucket['Name']}: {e}")
             location = None
 
         if location:
-            region = location['LocationConstraint'] if location['LocationConstraint'] else 'us-east-1'
+            region = location['LocationConstraint'] or 'us-east-1'
 
             # Fixes issue #59: location constraint can be either EU or eu-west-1 for Ireland...
             if region == 'EU':
@@ -80,12 +83,15 @@ class S3Facade(AWSBaseFacade):
         try:
             logging = await run_concurrently(lambda: client.get_bucket_logging(Bucket=bucket['Name']))
         except Exception as e:
-            print_exception('Failed to get logging configuration for {}: {}'.format(bucket['Name'], e))
+            print_exception(
+                f"Failed to get logging configuration for {bucket['Name']}: {e}"
+            )
+
             bucket['logging'] = 'Unknown'
         else:
             if 'LoggingEnabled' in logging:
                 bucket['logging'] = \
-                    logging['LoggingEnabled']['TargetBucket'] + '/' + logging['LoggingEnabled']['TargetPrefix']
+                        logging['LoggingEnabled']['TargetBucket'] + '/' + logging['LoggingEnabled']['TargetPrefix']
             else:
                 bucket['logging'] = 'Disabled'
 
@@ -96,7 +102,10 @@ class S3Facade(AWSBaseFacade):
             bucket['versioning_status_enabled'] = self._status_to_bool(versioning.get('Status'))
             bucket['version_mfa_delete_enabled'] = self._status_to_bool(versioning.get('MFADelete'))
         except Exception as e:
-            print_exception('Failed to get versioning configuration for {}: {}'.format(bucket['Name'], e))
+            print_exception(
+                f"Failed to get versioning configuration for {bucket['Name']}: {e}"
+            )
+
             bucket['versioning_status_enabled'] = None
             bucket['version_mfa_delete_enabled'] = None
 
@@ -109,7 +118,9 @@ class S3Facade(AWSBaseFacade):
             if "NoSuchWebsiteConfiguration" in str(e):
                 bucket['web_hosting_enabled'] = False
             else:
-                print_exception('Failed to get web hosting configuration for {}: {}'.format(bucket['Name'], e))
+                print_exception(
+                    f"Failed to get web hosting configuration for {bucket['Name']}: {e}"
+                )
 
     async def _get_and_set_s3_bucket_default_encryption(self, bucket: {}):
         bucket_name = bucket['Name']
@@ -140,7 +151,7 @@ class S3Facade(AWSBaseFacade):
                 if 'ID' in grant['Grantee']:
                     grantee = grant['Grantee']['ID']
                     display_name = grant['Grantee']['DisplayName'] if \
-                        'DisplayName' in grant['Grantee'] else grant['Grantee']['ID']
+                            'DisplayName' in grant['Grantee'] else grant['Grantee']['ID']
                 elif 'URI' in grant['Grantee']:
                     grantee = grant['Grantee']['URI'].split('/')[-1]
                     display_name = self._s3_group_to_string(grant['Grantee']['URI'])
@@ -165,9 +176,9 @@ class S3Facade(AWSBaseFacade):
             bucket['policy'] = json.loads(bucket_policy['Policy'])
         except ClientError as e:
             if e.response['Error']['Code'] != 'NoSuchBucketPolicy':
-                print_exception('Failed to get bucket policy for {}: {}'.format(bucket['Name'], e))
+                print_exception(f"Failed to get bucket policy for {bucket['Name']}: {e}")
         except Exception as e:
-            print_exception('Failed to get bucket policy for {}: {}'.format(bucket['Name'], e))
+            print_exception(f"Failed to get bucket policy for {bucket['Name']}: {e}")
             bucket['grantees'] = {}
 
     async def _get_and_set_s3_bucket_tags(self, bucket: {}):
@@ -177,9 +188,9 @@ class S3Facade(AWSBaseFacade):
             bucket['tags'] = {x['Key']: x['Value'] for x in bucket_tagset['TagSet']}
         except ClientError as e:
             if e.response['Error']['Code'] != 'NoSuchTagSet':
-                print_exception('Failed to get bucket tags for {}: {}'.format(bucket['Name'], e))
+                print_exception(f"Failed to get bucket tags for {bucket['Name']}: {e}")
         except Exception as e:
-            print_exception('Failed to get bucket tags for {}: {}'.format(bucket['Name'], e))
+            print_exception(f"Failed to get bucket tags for {bucket['Name']}: {e}")
             bucket['tags'] = {}
 
     async def _get_and_set_s3_bucket_block_public_access(self, bucket: {}):
@@ -191,7 +202,9 @@ class S3Facade(AWSBaseFacade):
             # No such configuration found for the bucket, nothing to be done
             pass
         except Exception as e:
-            print_exception('Failed to get the public access block configuration for {}: {}'.format(bucket['Name'], e))
+            print_exception(
+                f"Failed to get the public access block configuration for {bucket['Name']}: {e}"
+            )
 
     def _set_s3_bucket_secure_transport(self, bucket: {}):
         try:
@@ -201,9 +214,9 @@ class S3Facade(AWSBaseFacade):
                     # evaluate statement to see if it contains a condition disallowing HTTP transport
                     # TODO this might not cover all cases
                     if 'Condition' in statement and \
-                            'Bool' in statement['Condition'] and \
-                            'aws:SecureTransport' in statement['Condition']['Bool'] and \
-                            ((statement['Condition']['Bool']['aws:SecureTransport'] == 'false' and
+                                'Bool' in statement['Condition'] and \
+                                'aws:SecureTransport' in statement['Condition']['Bool'] and \
+                                ((statement['Condition']['Bool']['aws:SecureTransport'] == 'false' and
                               statement['Effect'] == 'Deny') or
                              (statement['Condition']['Bool']['aws:SecureTransport'] == 'true' and
                               statement['Effect'] == 'Allow')):
@@ -211,7 +224,7 @@ class S3Facade(AWSBaseFacade):
             else:
                 bucket['secure_transport_enabled'] = False
         except Exception as e:
-            print_exception('Failed to evaluate bucket policy for {}: {}'.format(bucket['Name'], e))
+            print_exception(f"Failed to evaluate bucket policy for {bucket['Name']}: {e}")
             bucket['secure_transport'] = None
 
     def get_s3_public_access_block(self, account_id):
@@ -237,18 +250,17 @@ class S3Facade(AWSBaseFacade):
 
     @staticmethod
     def _init_s3_permissions():
-        permissions = {'read': False, 'write': False, 'read_acp': False, 'write_acp': False}
-        return permissions
+        return {'read': False, 'write': False, 'read_acp': False, 'write_acp': False}
 
     @staticmethod
     def _set_s3_permissions(permissions: str, name: str):
-        if name == 'READ' or name == 'FULL_CONTROL':
+        if name in {'READ', 'FULL_CONTROL'}:
             permissions['read'] = True
-        if name == 'WRITE' or name == 'FULL_CONTROL':
+        if name in {'WRITE', 'FULL_CONTROL'}:
             permissions['write'] = True
-        if name == 'READ_ACP' or name == 'FULL_CONTROL':
+        if name in {'READ_ACP', 'FULL_CONTROL'}:
             permissions['read_acp'] = True
-        if name == 'WRITE_ACP' or name == 'FULL_CONTROL':
+        if name in {'WRITE_ACP', 'FULL_CONTROL'}:
             permissions['write_acp'] = True
 
     @staticmethod

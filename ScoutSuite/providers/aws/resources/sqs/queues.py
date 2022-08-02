@@ -17,9 +17,7 @@ class Queues(AWSResources):
             self[id] = queue
 
     def _parse_queue(self, queue_url, queue_attributes):
-        queue = {}
-        queue['QueueUrl'] = queue_url
-        queue['arn'] = queue_attributes.pop('QueueArn')
+        queue = {'QueueUrl': queue_url, 'arn': queue_attributes.pop('QueueArn')}
         queue['name'] = queue['arn'].split(':')[-1]
         queue['kms_master_key_id'] = queue_attributes.pop('KmsMasterKeyId', None)
         queue['CreatedTimestamp'] = queue_attributes.pop('CreatedTimestamp', None)

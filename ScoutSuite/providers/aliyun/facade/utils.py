@@ -22,15 +22,9 @@ async def get_response(client, request):
 
         return response_decoded
     except ServerException as e:
-        if False:  # TODO define exceptions to handle
-            print_exception(e)
-        else:
-            raise
+        raise
     except ClientException as e:
-        if False:  # TODO define exceptions to handle
-            print_exception(e)
-        else:
-            raise
+        raise
     except Exception as e:
         print_exception(f'Unhandled exception {e} for request {request}')
 
@@ -57,6 +51,4 @@ async def merge_responses(response_1, response_2):
             else:
                 # TODO implement other cases (which ones?)
                 print_exception('Unhandled response merge')
-        else:
-            pass
     return response_2

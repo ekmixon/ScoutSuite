@@ -114,9 +114,12 @@ class GCPFacade(GCPBaseFacade):
 
             project_response = await GCPFacadeUtils.get_all('projects', request, projects_group)
             if project_response:
-                for project in project_response:
-                    if project['lifecycleState'] == "ACTIVE":
-                        projects.append(project)
+                projects.extend(
+                    project
+                    for project in project_response
+                    if project['lifecycleState'] == "ACTIVE"
+                )
+
             else:
                 print_exception('No Projects Found: '
                                 'You may have specified a non-existing organization/folder/project?')
@@ -165,18 +168,21 @@ class GCPFacade(GCPBaseFacade):
         elif service == 'StackdriverMonitoring':
             endpoint = 'monitoring'
         else:
-            print_debug('Could not validate the state of the {} API for project \"{}\", '
-                        'including it in the execution'.format(format_service_name(service.lower()), project_id))
+            print_debug(
+                f'Could not validate the state of the {format_service_name(service.lower())} API for project \"{project_id}\", including it in the execution'
+            )
+
             return True
 
         for s in services_response:
             if endpoint in s.get('name'):
                 if s.get('state') == 'ENABLED':
                     return True
-                else:
-                    print_info('{} API not enabled for project \"{}\", skipping'.format(format_service_name(service.lower()),
-                                                                                        project_id))
-                    return False
+                print_info(
+                    f'{format_service_name(service.lower())} API not enabled for project \"{project_id}\", skipping'
+                )
+
+                return False
 
         print_error(f'Could not validate the state of the {format_service_name(service.lower())} API '
                     f'for project \"{project_id}\", including it in the execution')

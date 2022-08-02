@@ -40,8 +40,10 @@ class ProcessingEngine:
                 path = finding_path.split('.')
                 service = path[0]
                 manage_dictionary(cloud_provider.services[service], self.ruleset.rule_type, {})
-                cloud_provider.services[service][self.ruleset.rule_type][rule.key] = {}
-                cloud_provider.services[service][self.ruleset.rule_type][rule.key]['description'] = rule.description
+                cloud_provider.services[service][self.ruleset.rule_type][
+                    rule.key
+                ] = {'description': rule.description}
+
                 cloud_provider.services[service][self.ruleset.rule_type][rule.key]['path'] = rule.path
                 for attr in ['level', 'id_suffix', 'class_suffix', 'display_path']:
                     if hasattr(rule, attr):
@@ -53,20 +55,20 @@ class ProcessingEngine:
                     if skip_dashboard:
                         continue
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['dashboard_name'] = \
-                        rule.dashboard_name
+                            rule.dashboard_name
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['checked_items'] = \
-                        rule.checked_items
+                            rule.checked_items
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['flagged_items'] = \
-                        len(cloud_provider.services[service][self.ruleset.rule_type][rule.key]['items'])
+                            len(cloud_provider.services[service][self.ruleset.rule_type][rule.key]['items'])
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['service'] = rule.service
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['rationale'] = \
-                        rule.rationale if hasattr(rule, 'rationale') else None
+                            rule.rationale if hasattr(rule, 'rationale') else None
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['remediation'] = \
-                        rule.remediation if hasattr(rule, 'remediation') else None
+                            rule.remediation if hasattr(rule, 'remediation') else None
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['compliance'] = \
-                        rule.compliance if hasattr(rule, 'compliance') else None
+                            rule.compliance if hasattr(rule, 'compliance') else None
                     cloud_provider.services[service][self.ruleset.rule_type][rule.key]['references'] = \
-                        rule.references if hasattr(rule, 'references') else None
+                            rule.references if hasattr(rule, 'references') else None
                 except Exception as e:
                     print_exception(f'Failed to process rule defined in {rule.filename}: {e}')
                     # Fallback if process rule failed to ensure report creation and data dump still happen

@@ -14,10 +14,12 @@ class Snapshots(Resources):
             self[snapshot_id] = snapshot
 
     def _parse_snapshot(self, raw_snapshot):
-        snapshot_dict = {}
-        snapshot_dict['id'] = raw_snapshot['id']
-        snapshot_dict['name'] = raw_snapshot['name']
-        snapshot_dict['description'] = self._get_description(raw_snapshot)
+        snapshot_dict = {
+            'id': raw_snapshot['id'],
+            'name': raw_snapshot['name'],
+            'description': self._get_description(raw_snapshot),
+        }
+
         snapshot_dict['creation_timestamp'] = raw_snapshot['creationTimestamp']
         snapshot_dict['status'] = raw_snapshot['status']
         snapshot_dict['source_disk_id'] = raw_snapshot['sourceDiskId']
@@ -26,4 +28,4 @@ class Snapshots(Resources):
 
     def _get_description(self, raw_snapshot):
         description = raw_snapshot.get('description')
-        return description if description else 'N/A'
+        return description or 'N/A'

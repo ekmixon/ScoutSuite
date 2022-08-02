@@ -126,7 +126,7 @@ def run(provider,
     if loop.is_closed():
         loop = asyncio.new_event_loop()
     # Set the throttler within the loop so it's accessible later on
-    loop.throttler = Throttler(rate_limit=max_rate if max_rate else 999999, period=1)
+    loop.throttler = Throttler(rate_limit=max_rate or 999999, period=1)
     loop.set_default_executor(ThreadPoolExecutor(max_workers=max_workers))
     result = loop.run_until_complete(_run(**locals()))  # pass through all the parameters
     loop.close()
@@ -233,7 +233,7 @@ async def _run(provider,
 
     # Create a new report
     try:
-        report_name = report_name if report_name else cloud_provider.get_report_name()
+        report_name = report_name or cloud_provider.get_report_name()
         report = ScoutReport(cloud_provider.provider_code,
                              report_name,
                              report_dir,
@@ -245,7 +245,7 @@ async def _run(provider,
             Server.init(database_file, host_ip, host_port)
             return
     except Exception as e:
-        print_exception('Report initialization failure: {}'.format(e))
+        print_exception(f'Report initialization failure: {e}')
         return 103
 
     # If this command, run and exit
@@ -266,7 +266,7 @@ async def _run(provider,
             print_info('\nCancelled by user')
             return 130
         except Exception as e:
-            print_exception('Unhandled exception thrown while gathering data: {}'.format(e))
+            print_exception(f'Unhandled exception thrown while gathering data: {e}')
             return 104
 
         # Update means we reload the whole config and overwrite part of it
@@ -279,9 +279,8 @@ async def _run(provider,
                 for service in cloud_provider.service_list:
                     cloud_provider.services[service] = current_run_services[service]
             except Exception as e:
-                print_exception('Failure while updating report: {}'.format(e))
+                print_exception(f'Failure while updating report: {e}')
 
-    # Partial run, using pre-pulled data
     else:
         try:
             print_info('Using local data')
@@ -290,14 +289,14 @@ async def _run(provider,
             for key in last_run_dict:
                 setattr(cloud_provider, key, last_run_dict[key])
         except Exception as e:
-            print_exception('Failure while updating report: {}'.format(e))
+            print_exception(f'Failure while updating report: {e}')
 
     # Pre processing
     try:
         print_info('Running pre-processing engine')
         cloud_provider.preprocessing(ip_ranges, ip_ranges_name_key)
     except Exception as e:
-        print_exception('Failure while running pre-processing engine: {}'.format(e))
+        print_exception(f'Failure while running pre-processing engine: {e}')
         return 105
 
     # Analyze config
@@ -311,7 +310,7 @@ async def _run(provider,
         processing_engine = ProcessingEngine(finding_rules)
         processing_engine.run(cloud_provider)
     except Exception as e:
-        print_exception('Failure while running rule engine: {}'.format(e))
+        print_exception(f'Failure while running rule engine: {e}')
         return 106
 
     # Create display filters
@@ -325,7 +324,7 @@ async def _run(provider,
         processing_engine = ProcessingEngine(filter_rules)
         processing_engine.run(cloud_provider)
     except Exception as e:
-        print_exception('Failure while applying display filters: {}'.format(e))
+        print_exception(f'Failure while applying display filters: {e}')
         return 107
 
     # Handle exceptions
@@ -352,23 +351,20 @@ async def _run(provider,
         }
         cloud_provider.postprocessing(report.current_time, finding_rules, run_parameters)
     except Exception as e:
-        print_exception('Failure while running post-processing engine: {}'.format(e))
+        print_exception(f'Failure while running post-processing engine: {e}')
         return 108
 
     # Save config and create HTML report
     try:
         html_report_path = report.save(cloud_provider, exceptions, force_write, debug)
     except Exception as e:
-        print_exception('Failure while generating HTML report: {}'.format(e))
+        print_exception(f'Failure while generating HTML report: {e}')
         return 109
 
     # Open the report by default
     if not no_browser:
         print_info('Opening the HTML report')
-        url = 'file://%s' % os.path.abspath(html_report_path)
+        url = f'file://{os.path.abspath(html_report_path)}'
         webbrowser.open(url, new=2)
 
-    if ERRORS_LIST:  # errors were handled during execution
-        return 200
-    else:
-        return 0
+    return 200 if ERRORS_LIST else 0

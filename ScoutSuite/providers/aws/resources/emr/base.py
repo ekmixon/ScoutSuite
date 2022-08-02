@@ -17,7 +17,11 @@ class EMR(Regions):
 
         for region in self['regions']:
             self['regions'][region]['clusters_count'] = sum(
-                [len(vpc['clusters']) for vpc in self['regions'][region]['vpcs'].values()])
+                len(vpc['clusters'])
+                for vpc in self['regions'][region]['vpcs'].values()
+            )
+
 
         self['clusters_count'] = sum(
-            [region['clusters_count'] for region in self['regions'].values()])
+            region['clusters_count'] for region in self['regions'].values()
+        )

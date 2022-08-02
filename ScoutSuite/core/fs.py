@@ -12,10 +12,7 @@ class CustomJSONEncoder(json.JSONEncoder):
     """
 
     def default(self, o):
-        if type(o) == datetime.datetime:
-            return str(o)
-        else:
-            return o.__dict__
+        return str(o) if type(o) == datetime.datetime else o.__dict__
 
 
 def load_data(data_file, key_name=None, local_file=False):
@@ -76,13 +73,7 @@ def read_ip_ranges(filename, local_file=True, ip_only=False, conditions=None):
                 break
         if condition_passed:
             targets.append(d)
-    if ip_only:
-        ips = []
-        for t in targets:
-            ips.append(t['ip_prefix'])
-        return ips
-    else:
-        return targets
+    return [t['ip_prefix'] for t in targets] if ip_only else targets
 
 
 def save_blob_as_json(filename, blob, force_write):

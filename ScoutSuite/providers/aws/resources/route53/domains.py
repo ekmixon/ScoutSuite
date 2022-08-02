@@ -15,13 +15,13 @@ class Domains(AWSResources):
             self[id] = domain
 
     def _parse_domain(self, raw_domain):
-        domain_dict = {}
-        domain_dict['id'] = get_non_provider_id(raw_domain.get('DomainName'))
+        domain_dict = {'id': get_non_provider_id(raw_domain.get('DomainName'))}
         domain_dict['name'] = raw_domain.get('DomainName')
         domain_dict['auto_renew'] = raw_domain.get('AutoRenew')
         domain_dict['transfer_lock'] = raw_domain.get('TransferLock')
         domain_dict['expiry'] = raw_domain.get('Expiry')
-        domain_dict['arn'] = 'arn:aws:route53:{}:{}:domain/{}'.format(self.region,
-                                                                 self.facade.owner_id,
-                                                                 domain_dict.get('id'))
+        domain_dict[
+            'arn'
+        ] = f"arn:aws:route53:{self.region}:{self.facade.owner_id}:domain/{domain_dict.get('id')}"
+
         return domain_dict['id'], domain_dict

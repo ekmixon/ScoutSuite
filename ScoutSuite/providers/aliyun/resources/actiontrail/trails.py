@@ -8,8 +8,7 @@ class Trails(AliyunResources):
             self[id] = trail
 
     def _parse_trails(self, raw_trail):
-        trail_dict = {}
-        trail_dict['id'] = raw_trail.get('Name')
+        trail_dict = {'id': raw_trail.get('Name')}
         trail_dict['name'] = raw_trail.get('Name')
         trail_dict['role_name'] = raw_trail.get('RoleName')
         trail_dict['home_region'] = raw_trail.get('HomeRegion')

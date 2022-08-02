@@ -14,9 +14,10 @@ class Pricings(AzureResources):
             self[id] = pricing
 
     def _parse_pricing(self, pricing):
-        pricing_dict = {}
-        pricing_dict['id'] = pricing.id
-        pricing_dict['name'] = pricing.name
-        pricing_dict['pricing_tier'] = pricing.pricing_tier
+        pricing_dict = {
+            'id': pricing.id,
+            'name': pricing.name,
+            'pricing_tier': pricing.pricing_tier,
+        }
 
         return pricing_dict['id'], pricing_dict

@@ -41,11 +41,8 @@ class IAMFacade(AWSBaseFacade):
 
             credential_reports = []
             for line in lines[1:]:
-                credential_report = {}
                 values = line.decode('utf-8').split(',')
-                for key, value in zip(keys, values):
-                    credential_report[key] = value
-
+                credential_report = dict(zip(keys, values))
                 credential_reports.append(credential_report)
 
             return credential_reports
@@ -112,10 +109,7 @@ class IAMFacade(AWSBaseFacade):
             user['LoginProfile'] = await run_concurrently(
                 lambda: client.get_login_profile(UserName=user['UserName'])['LoginProfile'])
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
-                #  If the user has not been assigned a password, the operation returns a 404 (NoSuchEntity ) error.
-                pass
-            else:
+            if e.response["Error"]["Code"] != "NoSuchEntity":
                 print_exception(f'Failed to get login profile: {e}')
         except Exception as e:
             print_exception(f'Failed to get login profile: {e}')
@@ -203,13 +197,13 @@ class IAMFacade(AWSBaseFacade):
             users = await run_concurrently(lambda: client.get_group(GroupName=group['GroupName'])['Users'])
             group['Users'] = [user['UserId'] for user in users]
         except Exception as e:
-            print_exception('Failed to get IAM group {}: {}'.format(group['GroupName'], e))
+            print_exception(f"Failed to get IAM group {group['GroupName']}: {e}")
 
     async def _get_and_set_inline_policies(self, resource, iam_resource_type):
         client = AWSFacadeUtils.get_client('iam', self.session)
-        list_policy_method = getattr(client, 'list_' + iam_resource_type + '_policies')
-        resource_name = resource[iam_resource_type.title() + 'Name']
-        args = {iam_resource_type.title() + 'Name': resource_name}
+        list_policy_method = getattr(client, f'list_{iam_resource_type}_policies')
+        resource_name = resource[f'{iam_resource_type.title()}Name']
+        args = {f'{iam_resource_type.title()}Name': resource_name}
 
         resource['inline_policies'] = {}
 
@@ -220,7 +214,7 @@ class IAMFacade(AWSBaseFacade):
         except Exception as e:
             print_exception(f'Failed to list IAM policy: {e}')
         else:
-            get_policy_method = getattr(client, 'get_' + iam_resource_type + '_policy')
+            get_policy_method = getattr(client, f'get_{iam_resource_type}_policy')
             try:
                 tasks = {
                     asyncio.ensure_future(

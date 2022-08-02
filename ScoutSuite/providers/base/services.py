@@ -25,7 +25,7 @@ class BaseServicesConfig:
             # Print services that are going to get skipped:
             for service in vars(self):
                 if service not in services and service != 'credentials':
-                    print_debug('Skipping the {} service'.format(format_service_name(service)))
+                    print_debug(f'Skipping the {format_service_name(service)} service')
 
             # Then, fetch concurrently all services:
             if services:
@@ -38,7 +38,10 @@ class BaseServicesConfig:
 
     async def _fetch(self, service, regions=None, excluded_regions=None):
         try:
-            print_info('Fetching resources for the {} service'.format(format_service_name(service)))
+            print_info(
+                f'Fetching resources for the {format_service_name(service)} service'
+            )
+
             service_config = getattr(self, service)
             # call fetch method for the service
             if 'fetch_all' in dir(service_config):
@@ -49,15 +52,14 @@ class BaseServicesConfig:
                 if excluded_regions:
                     method_args['excluded_regions'] = excluded_regions
 
-                if self._is_provider('aws'):
-                    if service != 'iam':
-                        method_args['partition_name'] = get_partition_name(self.credentials.session)
+                if self._is_provider('aws') and service != 'iam':
+                    method_args['partition_name'] = get_partition_name(self.credentials.session)
 
                 await service_config.fetch_all(**method_args)
 
                 if hasattr(service_config, 'finalize'):
                     await service_config.finalize()
             else:
-                print_debug('No method to fetch service %s.' % service)
+                print_debug(f'No method to fetch service {service}.')
         except Exception as e:
             print_exception(f'Could not fetch {service} configuration: {e}')

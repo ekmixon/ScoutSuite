@@ -28,12 +28,11 @@ class Identities(AWSCompositeResources):
 
     def _parse_identity(self, raw_identity):
         identity_name, dkim_attributes = raw_identity
-        identity = {}
-        identity['name'] = identity_name
-        identity['DkimEnabled'] = dkim_attributes['DkimEnabled']
-        identity['DkimVerificationStatus'] = dkim_attributes['DkimVerificationStatus']
-        identity['arn'] = 'arn:aws:ses:{}:{}:identity/{}'.format(self.region,
-                                                                             self.facade.owner_id,
-                                                                             identity_name)
+        identity = {
+            'name': identity_name,
+            'DkimEnabled': dkim_attributes['DkimEnabled'],
+            'DkimVerificationStatus': dkim_attributes['DkimVerificationStatus'],
+            'arn': f'arn:aws:ses:{self.region}:{self.facade.owner_id}:identity/{identity_name}',
+        }
 
         return get_non_provider_id(identity_name), identity

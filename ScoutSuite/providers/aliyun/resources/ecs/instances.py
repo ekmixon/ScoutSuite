@@ -13,8 +13,7 @@ class Instances(AliyunResources):
             self[id] = instance
 
     async def _parse_instance(self, raw_instance):
-        instance_dict = {}
-        instance_dict['id'] = raw_instance.get('InstanceId')
+        instance_dict = {'id': raw_instance.get('InstanceId')}
         instance_dict['name'] = raw_instance.get('InstanceName')
         instance_dict['auto_release_time'] = raw_instance.get('AutoReleaseTime')
         instance_dict['region_id'] = raw_instance.get('RegionId')

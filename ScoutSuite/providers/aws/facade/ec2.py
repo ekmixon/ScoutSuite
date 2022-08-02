@@ -31,24 +31,22 @@ class EC2Facade(AWSBaseFacade):
         else:
             if 'Value' not in user_data_response['UserData'].keys():
                 return None
-            else:
-                try:
-                    return await self._decode_user_data(user_data_response['UserData']['Value'])
-                except Exception as e:
-                    print_exception(f'Unable to decode EC2 instance user data: {e}')
+            try:
+                return await self._decode_user_data(user_data_response['UserData']['Value'])
+            except Exception as e:
+                print_exception(f'Unable to decode EC2 instance user data: {e}')
 
     async def _decode_user_data(self, user_data):
         try:
             value = base64.b64decode(user_data)
         except base64.binascii.Error as e:
             value = base64.b64decode(f'{user_data}===')
-        if value[0:2] == b'\x1f\x8b':  # GZIP magic number
+        if value[:2] == b'\x1f\x8b':
             return zlib.decompress(value, zlib.MAX_WBITS | 32).decode('utf-8')
-        else:
-            try:
-                return value.decode('utf-8')
-            except UnicodeDecodeError:
-                return value.decode('latin-1')
+        try:
+            return value.decode('utf-8')
+        except UnicodeDecodeError:
+            return value.decode('latin-1')
 
     async def get_instances(self, region: str, vpc: str):
         filters = [{'Name': 'vpc-id', 'Values': [vpc]}]
@@ -173,7 +171,7 @@ class EC2Facade(AWSBaseFacade):
                 return
 
             self.flow_logs_cache[region] = \
-                await AWSFacadeUtils.get_all_pages('ec2', region, self.session, 'describe_flow_logs', 'FlowLogs')
+                    await AWSFacadeUtils.get_all_pages('ec2', region, self.session, 'describe_flow_logs', 'FlowLogs')
 
     async def get_subnets(self, region: str, vpc: str):
         ec2_client = AWSFacadeUtils.get_client('ec2', self.session, region)
@@ -189,9 +187,11 @@ class EC2Facade(AWSBaseFacade):
 
     async def _get_and_set_subnet_flow_logs(self, subnet: {}, region: str):
         await self.cache_flow_logs(region)
-        subnet['flow_logs'] = \
-            [flow_log for flow_log in self.flow_logs_cache[region]
-             if flow_log['ResourceId'] == subnet['SubnetId'] or flow_log['ResourceId'] == subnet['VpcId']]
+        subnet['flow_logs'] = [
+            flow_log
+            for flow_log in self.flow_logs_cache[region]
+            if flow_log['ResourceId'] in [subnet['SubnetId'], subnet['VpcId']]
+        ]
 
     async def get_peering_connections(self, region):
         try:
@@ -206,5 +206,5 @@ class EC2Facade(AWSBaseFacade):
             route_tables = await AWSFacadeUtils.get_all_pages('ec2', region, self.session, 'describe_route_tables', 'RouteTables')
             return route_tables
         except Exception as e:
-            print_exception('Failed to get route tables: {}'.format(e))
+            print_exception(f'Failed to get route tables: {e}')
             return []

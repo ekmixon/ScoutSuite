@@ -57,11 +57,14 @@ class StorageAccountsFacade:
         # with a bad request):
         timespan = datetime.timedelta(90)
 
-        logs_filter = " and ".join([
-            "eventTimestamp ge {}".format((utc_now - timespan).strftime(time_format)),
-            "eventTimestamp le {}".format(utc_now.strftime(time_format)),
-            f"resourceId eq {storage_account.id}",
-        ])
+        logs_filter = " and ".join(
+            [
+                f"eventTimestamp ge {(utc_now - timespan).strftime(time_format)}",
+                f"eventTimestamp le {utc_now.strftime(time_format)}",
+                f"resourceId eq {storage_account.id}",
+            ]
+        )
+
         try:
             activity_logs = await run_concurrently(
                 lambda: list(client.activity_logs.list(filter=logs_filter, select="eventTimestamp, operationName"))

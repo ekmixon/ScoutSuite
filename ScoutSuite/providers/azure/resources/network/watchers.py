@@ -16,13 +16,15 @@ class Watchers(AzureResources):
             self[id] = network_watcher
 
     def _parse_network_watcher(self, raw_watcher):
-        watcher_dict = {}
-        watcher_dict['id'] = get_non_provider_id(raw_watcher.id)
+        watcher_dict = {'id': get_non_provider_id(raw_watcher.id)}
         watcher_dict['name'] = raw_watcher.name
         watcher_dict['type'] = raw_watcher.type
         watcher_dict['location'] = raw_watcher.location
         if raw_watcher.tags is not None:
-            watcher_dict['tags'] = ["{}:{}".format(key, value) for key, value in raw_watcher.tags.items()]
+            watcher_dict['tags'] = [
+                f"{key}:{value}" for key, value in raw_watcher.tags.items()
+            ]
+
         else:
             watcher_dict['tags'] = []
         watcher_dict['resource_group_name'] = get_resource_group_name(raw_watcher.id)

@@ -19,12 +19,12 @@ class SecurityGroups(AWSResources):
             self[name] = resource
 
     def _parse_security_group(self, raw_security_group):
-        security_group = {}
-        security_group['name'] = raw_security_group['GroupName']
-        security_group['id'] = raw_security_group['GroupId']
-        security_group['arn'] = 'arn:aws:ec2:{}:{}:security-group/{}'.format(self.region,
-                                                     raw_security_group.get('OwnerId'),
-                                                     raw_security_group.get('GroupId'))
+        security_group = {
+            'name': raw_security_group['GroupName'],
+            'id': raw_security_group['GroupId'],
+            'arn': f"arn:aws:ec2:{self.region}:{raw_security_group.get('OwnerId')}:security-group/{raw_security_group.get('GroupId')}",
+        }
+
         security_group['description'] = raw_security_group['Description']
         security_group['owner_id'] = raw_security_group['OwnerId']
 
@@ -43,8 +43,8 @@ class SecurityGroups(AWSResources):
         security_group['rules']['egress']['count'] = egress_rules_count
 
         security_group['is_default_configuration'] = \
-            self._has_default_egress_rule(raw_security_group['IpPermissionsEgress']) and \
-            self._has_default_ingress_rule(raw_security_group['IpPermissions'], raw_security_group['GroupId'])
+                self._has_default_egress_rule(raw_security_group['IpPermissionsEgress']) and \
+                self._has_default_ingress_rule(raw_security_group['IpPermissions'], raw_security_group['GroupId'])
 
         return security_group['id'], security_group
 
@@ -85,7 +85,7 @@ class SecurityGroups(AWSResources):
                 elif rule['FromPort'] == rule['ToPort']:
                     port_value = str(rule['FromPort'])
                 else:
-                    port_value = '{}-{}'.format(rule['FromPort'], rule['ToPort'])
+                    port_value = f"{rule['FromPort']}-{rule['ToPort']}"
             manage_dictionary(protocols[ip_protocol]['ports'], port_value, {})
 
             # Save grants, values are either a CIDR or an EC2 security group

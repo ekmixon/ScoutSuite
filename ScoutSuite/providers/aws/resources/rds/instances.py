@@ -15,8 +15,7 @@ class RDSInstances(AWSResources):
             self[name] = resource
 
     def _parse_instance(self, raw_instance):
-        instance = {}
-        instance['name'] = raw_instance.pop('DBInstanceIdentifier')
+        instance = {'name': raw_instance.pop('DBInstanceIdentifier')}
         for key in ['InstanceCreateTime', 'Engine', 'DBInstanceStatus', 'AutoMinorVersionUpgrade',
                     'DBInstanceClass', 'MultiAZ', 'Endpoint', 'BackupRetentionPeriod', 'PubliclyAccessible',
                     'StorageEncrypted', 'VpcSecurityGroups', 'DBSecurityGroups', 'DBParameterGroups',
@@ -24,9 +23,10 @@ class RDSInstances(AWSResources):
             instance[key] = raw_instance[key] if key in raw_instance else None
 
         instance['is_read_replica'] = self._is_read_replica(raw_instance)
-        instance['arn'] = 'arn:aws:rds:{}:{}:instance/{}'.format(self.region,
-                                                                           self.facade.owner_id,
-                                                                           raw_instance.get('DbiResourceId'))
+        instance[
+            'arn'
+        ] = f"arn:aws:rds:{self.region}:{self.facade.owner_id}:instance/{raw_instance.get('DbiResourceId')}"
+
         return instance['name'], instance
 
     @staticmethod

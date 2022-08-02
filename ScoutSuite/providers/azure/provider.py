@@ -19,7 +19,10 @@ class AzureProvider(BaseProvider):
         services = [] if services is None else services
         skipped_services = [] if skipped_services is None else skipped_services
 
-        self.metadata_path = '%s/metadata.json' % os.path.split(os.path.abspath(__file__))[0]
+        self.metadata_path = (
+            f'{os.path.split(os.path.abspath(__file__))[0]}/metadata.json'
+        )
+
 
         self.provider_code = 'azure'
         self.provider_name = 'Microsoft Azure'
@@ -105,4 +108,4 @@ class AzureProvider(BaseProvider):
                                 self.services['rbac']['subscriptions'][subscription]['roles'][role_id]['assignments']['service_principals'].append(service_principal)
                                 self.services['rbac']['subscriptions'][subscription]['roles'][role_id]['assignments_count'] += 1
         except Exception as e:
-            print_exception('Unable to match RBAC roles and principals: {}'.format(e))
+            print_exception(f'Unable to match RBAC roles and principals: {e}')

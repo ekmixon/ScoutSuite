@@ -27,5 +27,7 @@ class Subscriptions(AzureCompositeResources):
 
     def _set_counts(self):
         for _, child_name in self._children:
-            self[child_name + '_count'] = sum([subscription[child_name + '_count']
-                                               for subscription in self['subscriptions'].values()])
+            self[f'{child_name}_count'] = sum(
+                subscription[f'{child_name}_count']
+                for subscription in self['subscriptions'].values()
+            )

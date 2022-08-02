@@ -20,8 +20,7 @@ class Users(AliyunCompositeResources):
         )
 
     async def _parse_user(self, raw_user):
-        user = {}
-        user['identifier'] = raw_user['UserId']  # required as groups use the name as an ID
+        user = {'identifier': raw_user['UserId']}
         user['id'] = user['name'] = raw_user['UserName']
         user['display_name'] = raw_user['DisplayName']
         user['comments'] = raw_user['Comments']
@@ -35,7 +34,7 @@ class Users(AliyunCompositeResources):
         user['mobile_phone'] = user_details.get('MobilePhone')
         user['last_login_datetime'] = user_details.get('LastLoginDate') if user_details.get('LastLoginDate') != '' else None
 
-        user['console_access'] = True if user_details.get('LastLoginDate') else False  # TODO this isn't valid
+        user['console_access'] = bool(user_details.get('LastLoginDate'))
 
         # get the MFA status for the user
         mfa_enabled, mfa_serial_number = await self.facade.ram.get_user_mfa_status(user['name'])

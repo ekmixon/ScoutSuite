@@ -4,8 +4,7 @@ from ScoutSuite.providers.utils import get_non_provider_id
 
 class Disks(Resources):
     def _parse_disk(self, raw_disk):
-        disk_dict = {}
-        disk_dict['id'] = get_non_provider_id(raw_disk['deviceName'])
+        disk_dict = {'id': get_non_provider_id(raw_disk['deviceName'])}
         disk_dict['type'] = raw_disk.get('type')
         disk_dict['mode'] = raw_disk.get('mode')
         disk_dict['source_url'] = raw_disk.get('source')

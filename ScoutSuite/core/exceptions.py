@@ -17,13 +17,17 @@ class RuleExceptions:
     def process(self, cloud_provider):
         for service in self.exceptions:
             for rule in self.exceptions[service]:
-                filtered_items = []
                 if rule not in cloud_provider.services[service]['findings']:
                     print_debug('Warning:: key error should not be happening')
                     continue
-                for item in cloud_provider.services[service]['findings'][rule]['items']:
-                    if item not in self.exceptions[service][rule]:
-                        filtered_items.append(item)
+                filtered_items = [
+                    item
+                    for item in cloud_provider.services[service]['findings'][rule][
+                        'items'
+                    ]
+                    if item not in self.exceptions[service][rule]
+                ]
+
                 cloud_provider.services[service]['findings'][rule]['items'] = filtered_items
                 cloud_provider.services[service]['findings'][rule]['flagged_items'] = \
-                    len(cloud_provider.services[service]['findings'][rule]['items'])
+                        len(cloud_provider.services[service]['findings'][rule]['items'])

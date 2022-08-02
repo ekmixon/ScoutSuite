@@ -14,7 +14,5 @@ class Alerts(AzureResources):
             self[id] = alert
 
     def _parse_alert(self, alert):
-        alert_dict = {}
-        alert_dict['id'] = alert.id
-        alert_dict['name'] = alert.name
+        alert_dict = {'id': alert.id, 'name': alert.name}
         return alert_dict['id'], alert_dict

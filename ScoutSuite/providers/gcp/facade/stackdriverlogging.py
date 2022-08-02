@@ -10,14 +10,14 @@ class StackdriverLoggingFacade:
 
     def get_client(self, project_id: str):
         client_info = ClientInfo(user_agent=get_user_agent())
-        client = stackdriverlogging.Client(project=project_id,
-                                           client_info=client_info)
-        return client
+        return stackdriverlogging.Client(
+            project=project_id, client_info=client_info
+        )
 
     async def get_sinks(self, project_id: str):
         try:
             client = self.get_client(project_id)
-            return await run_concurrently(lambda: [sink for sink in client.list_sinks()])
+            return await run_concurrently(lambda: list(client.list_sinks()))
         except Exception as e:
             print_exception(f'Failed to retrieve sinks: {e}')
             return []
@@ -25,7 +25,7 @@ class StackdriverLoggingFacade:
     async def get_metrics(self, project_id: str):
         try:
             client = self.get_client(project_id)
-            return await run_concurrently(lambda: [metric for metric in client.list_metrics()])
+            return await run_concurrently(lambda: list(client.list_metrics()))
         except Exception as e:
             print_exception(f'Failed to retrieve metrics: {e}')
             return []

@@ -16,10 +16,12 @@ class Backups(Resources):
                 self[backup_id] = backup
 
     def _parse_backup(self, raw_backup):
-        backup_dict = {}
-        backup_dict['id'] = raw_backup['id']
-        backup_dict['backup_url'] = raw_backup['selfLink'],
-        backup_dict['creation_timestamp'] = raw_backup['endTime'],
-        backup_dict['status'] = raw_backup['status'],
-        backup_dict['type'] = raw_backup['type']
+        backup_dict = {
+            'id': raw_backup['id'],
+            'backup_url': (raw_backup['selfLink'],),
+            'creation_timestamp': (raw_backup['endTime'],),
+            'status': (raw_backup['status'],),
+            'type': raw_backup['type'],
+        }
+
         return backup_dict['id'], backup_dict

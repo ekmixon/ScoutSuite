@@ -109,7 +109,10 @@ class BaseProvider:
                 print_error(f'Service \"{service}\" does not exist, skipping')
                 error = True
         if error:
-            print_info('Available services are: {}'.format(str(list(supported_services)).strip('[]')))
+            print_info(
+                f"Available services are: {str(list(supported_services)).strip('[]')}"
+            )
+
 
         return [s for s in supported_services if (services == [] or s in services) and s not in skipped_services]
 
@@ -181,7 +184,7 @@ class BaseProvider:
         Recursively look for counts of a specific resource in a resource tree.
         """
         count = 0
-        resource_count = '%s_count' % resource
+        resource_count = f'{resource}_count'
         if isinstance(resources, dict):
             if resource_count in resources.keys():
                 count += resources[resource_count]
@@ -196,13 +199,12 @@ class BaseProvider:
         a dict
         """
         if type(object) == dict:
-            if not str(attr) in object:
+            if str(attr) not in object:
                 object[str(attr)] = init
                 self.manage_object(object, attr, init)
-        else:
-            if not hasattr(object, attr):
-                setattr(object, attr, init)
-                self.manage_object(object, attr, init)
+        elif not hasattr(object, attr):
+            setattr(object, attr, init)
+            self.manage_object(object, attr, init)
         if callback:
             callback(getattr(object, attr))
         return object
@@ -225,8 +227,8 @@ class BaseProvider:
                 if 'summaries' in self.metadata[service_group][service]:
                     for summary in self.metadata[service_group][service]['summaries']:
                         if summary == 'external attack surface' and \
-                                service in self.services and \
-                                'external_attack_surface' in self.services[service]:
+                                    service in self.services and \
+                                    'external_attack_surface' in self.services[service]:
                             self.services[service].pop('external_attack_surface')
                 # Reset all global summaries
                 if hasattr(self, 'service_groups'):
@@ -278,7 +280,7 @@ class BaseProvider:
                                 if service == 'summaries':
                                     continue
                                 if 'summaries' in self.metadata[service_group][service] and \
-                                        summary in self.metadata[service_group][service]['summaries']:
+                                            summary in self.metadata[service_group][service]['summaries']:
                                     try:
                                         source = get_object_at(self,
                                                                self.metadata[service_group][service]['summaries'][
@@ -333,12 +335,15 @@ class BaseProvider:
                                                callback_args)
 
         except Exception as e:
-            print_exception(e, {'current path': f'{current_path}',
-                                'key': '{}'.format(key if 'key' in locals() else 'not defined'),
-                                'value': '{}'.format(value if 'value' in locals() else 'not defined'),
-                                'path': f'{path}',
-                                }
-                            )
+            print_exception(
+                e,
+                {
+                    'current path': f'{current_path}',
+                    'key': f"{key if 'key' in locals() else 'not defined'}",
+                    'value': f"{value if 'value' in locals() else 'not defined'}",
+                    'path': f'{path}',
+                },
+            )
 
     def _new_go_to_and_do(self, current_config, path, current_path, callbacks):
         """
@@ -377,15 +382,18 @@ class BaseProvider:
                                 else:
                                     callback(current_config, path, current_path, value, callback_args)
                             except Exception as e:
-                                print_exception(e, {'callback': callback_name,
-                                                    'callback arguments': callback_args,
-                                                    'current path': f'{current_path}',
-                                                    'key': '{}'.format(key if 'key' in locals() else 'not defined'),
-                                                    'value': '{}'.format(
-                                                        value if 'value' in locals() else 'not defined'),
-                                                    'path': f'{path}',
-                                                    }
-                                                )
+                                print_exception(
+                                    e,
+                                    {
+                                        'callback': callback_name,
+                                        'callback arguments': callback_args,
+                                        'current path': f'{current_path}',
+                                        'key': f"{key if 'key' in locals() else 'not defined'}",
+                                        'value': f"{value if 'value' in locals() else 'not defined'}",
+                                        'path': f'{path}',
+                                    },
+                                )
+
                     else:
                         tmp = copy.deepcopy(current_path)
                         try:
@@ -397,9 +405,12 @@ class BaseProvider:
                             tmp.append(i)
                             self._new_go_to_and_do(current_config[key][i], copy.deepcopy(path), tmp, callbacks)
         except Exception as e:
-            print_exception(e, {'current path': f'{current_path}',
-                                'key': '{}'.format(key if 'key' in locals() else 'not defined'),
-                                'value': '{}'.format(value if 'value' in locals() else 'not defined'),
-                                'path': f'{path}',
-                                }
-                            )
+            print_exception(
+                e,
+                {
+                    'current path': f'{current_path}',
+                    'key': f"{key if 'key' in locals() else 'not defined'}",
+                    'value': f"{value if 'value' in locals() else 'not defined'}",
+                    'path': f'{path}',
+                },
+            )

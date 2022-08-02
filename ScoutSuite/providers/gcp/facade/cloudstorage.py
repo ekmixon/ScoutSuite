@@ -10,9 +10,7 @@ class CloudStorageFacade:
 
     def get_client(self, project_id: str):
         client_info = ClientInfo(user_agent=get_user_agent())
-        client = storage.Client(project=project_id,
-                                client_info=client_info)
-        return client
+        return storage.Client(project=project_id, client_info=client_info)
 
     async def get_buckets(self, project_id: str):
         try:

@@ -19,7 +19,4 @@ class ActiontrailFacade:
         """
         response = await get_response(client=self._client,
                                       request=DescribeTrailsRequest.DescribeTrailsRequest())
-        if response:
-            return response['TrailList']
-        else:
-            return []
+        return response['TrailList'] if response else []

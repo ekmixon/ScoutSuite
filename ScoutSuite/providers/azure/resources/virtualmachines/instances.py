@@ -17,9 +17,8 @@ class Instances(AzureResources):
             self[id] = instance
 
     async def _parse_instance(self, raw_instance):
-        instance_dict = {}
+        instance_dict = {'id': get_non_provider_id(raw_instance.id.lower())}
 
-        instance_dict['id'] = get_non_provider_id(raw_instance.id.lower())
         instance_dict['name'] = raw_instance.name
         instance_dict['vm_id'] = raw_instance.vm_id
         instance_dict['zones'] = raw_instance.zones
@@ -31,7 +30,10 @@ class Instances(AzureResources):
         instance_dict['type'] = raw_instance.type
         instance_dict['resources'] = raw_instance.resources
         if raw_instance.tags is not None:
-            instance_dict['tags'] = ["{}:{}".format(key, value) for key, value in  raw_instance.tags.items()]
+            instance_dict['tags'] = [
+                f"{key}:{value}" for key, value in raw_instance.tags.items()
+            ]
+
         else:
             instance_dict['tags'] = []
         instance_dict['resource_group_name'] = get_resource_group_name(raw_instance.id)
@@ -49,9 +51,10 @@ class Instances(AzureResources):
         instance_dict['network_profile'] = raw_instance.network_profile
 
         # instance_dict['network_profile'] = raw_instance.network_profile
-        instance_dict['network_interfaces'] = []
-        for interface in raw_instance.network_profile.network_interfaces:
-            instance_dict['network_interfaces'].append(get_non_provider_id(interface.id))
+        instance_dict['network_interfaces'] = [
+            get_non_provider_id(interface.id)
+            for interface in raw_instance.network_profile.network_interfaces
+        ]
 
         instance_dict['extensions'] = await self.facade.virtualmachines.get_instance_extensions(
             subscription_id=self.subscription_id,

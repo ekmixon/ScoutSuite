@@ -42,7 +42,12 @@ class Networks(Subscriptions):
                 subnet_id = self['subscriptions'][subscription]['network_interfaces'][interface]['ip_configuration']['subnet']['id']
                 for network in self['subscriptions'][subscription]['virtual_networks']:
                     for network_subnet in self['subscriptions'][subscription]['virtual_networks'][network].get('subnets', []):
-                        if not 'instances' in self['subscriptions'][subscription]['virtual_networks'][network]['subnets'][network_subnet]:
+                        if (
+                            'instances'
+                            not in self['subscriptions'][subscription][
+                                'virtual_networks'
+                            ][network]['subnets'][network_subnet]
+                        ):
                             self['subscriptions'][subscription]['virtual_networks'][network]['subnets'][network_subnet]['instances'] = []
                         if subnet_id == network_subnet:
                             self['subscriptions'][subscription]['network_interfaces'][interface]['ip_configuration']['subnet'][

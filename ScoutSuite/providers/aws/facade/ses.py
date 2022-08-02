@@ -38,7 +38,7 @@ class SESFacade(AWSBaseFacade):
             print_exception(f'Failed to list SES policies: {e}')
             policy_names = []
 
-        if len(policy_names) == 0:
+        if not policy_names:
             return {}
 
         try:

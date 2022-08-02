@@ -18,10 +18,14 @@ class Snapshots(AWSResources):
         is_cluster = 'DBClusterIdentifier' in raw_snapshot
 
         snapshot_id = raw_snapshot.pop('DBClusterSnapshotIdentifier') if is_cluster \
-            else raw_snapshot.pop('DBSnapshotIdentifier')
+                else raw_snapshot.pop('DBSnapshotIdentifier')
 
-        snapshot = {}
-        snapshot['arn'] = raw_snapshot.pop('DBClusterSnapshotArn') if is_cluster else raw_snapshot.pop('DBSnapshotArn')
+        snapshot = {
+            'arn': raw_snapshot.pop('DBClusterSnapshotArn')
+            if is_cluster
+            else raw_snapshot.pop('DBSnapshotArn')
+        }
+
         snapshot['id'] = snapshot_id,
         snapshot['name'] = snapshot_id,
         snapshot['vpc_id'] = raw_snapshot['VpcId']

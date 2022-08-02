@@ -34,15 +34,18 @@ class NetworkACLs(AWSResources):
         acl_dict = {}
         for entry in entries:
             if entry['Egress'] == egress:
-                acl = {}
-                for key in ['RuleAction', 'RuleNumber']:
-                    acl[key] = entry[key]
+                acl = {key: entry[key] for key in ['RuleAction', 'RuleNumber']}
                 acl['CidrBlock'] = entry['CidrBlock'] if 'CidrBlock' in entry else entry['Ipv6CidrBlock']
                 acl['protocol'] = protocols_dict[entry['Protocol']]
                 if 'PortRange' in entry:
-                    from_port = entry['PortRange']['From'] if entry['PortRange']['From'] else 1
-                    to_port = entry['PortRange']['To'] if entry['PortRange']['To'] else 65535
-                    acl['port_range'] = from_port if from_port == to_port else str(from_port) + '-' + str(to_port)
+                    from_port = entry['PortRange']['From'] or 1
+                    to_port = entry['PortRange']['To'] or 65535
+                    acl['port_range'] = (
+                        from_port
+                        if from_port == to_port
+                        else f'{str(from_port)}-{str(to_port)}'
+                    )
+
                 else:
                     acl['port_range'] = '1-65535'
 

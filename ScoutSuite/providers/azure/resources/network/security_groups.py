@@ -16,8 +16,10 @@ class SecurityGroups(AzureResources):
             self[id] = network_security_group
 
     def _parse_network_security_group(self, network_security_group):
-        network_security_group_dict = {}
-        network_security_group_dict['id'] = get_non_provider_id(network_security_group.id)
+        network_security_group_dict = {
+            'id': get_non_provider_id(network_security_group.id)
+        }
+
         network_security_group_dict['name'] = network_security_group.name
         network_security_group_dict['location'] = network_security_group.location
         network_security_group_dict['provisioning_state'] = network_security_group.provisioning_state
@@ -25,7 +27,11 @@ class SecurityGroups(AzureResources):
         network_security_group_dict['type'] = network_security_group.type
         network_security_group_dict['etag'] = network_security_group.etag
         if network_security_group.tags is not None:
-            network_security_group_dict['tags'] = ["{}:{}".format(key, value) for key, value in  network_security_group.tags.items()]
+            network_security_group_dict['tags'] = [
+                f"{key}:{value}"
+                for key, value in network_security_group.tags.items()
+            ]
+
         else:
             network_security_group_dict['tags'] = []
         network_security_group_dict['resource_group_name'] = get_resource_group_name(network_security_group.id)
@@ -60,28 +66,32 @@ class SecurityGroups(AzureResources):
         return security_rules
 
     def _parse_security_rule(self, rule, default=False):
-        security_rule_dict = {}
-        security_rule_dict['id'] = rule.id
-        security_rule_dict['name'] = rule.name
-        security_rule_dict['allow'] = rule.access == "Allow"
-        security_rule_dict['priority'] = rule.priority
-        security_rule_dict['description'] = rule.description
-        security_rule_dict['provisioning_state'] = rule.provisioning_state
+        security_rule_dict = {
+            'id': rule.id,
+            'name': rule.name,
+            'allow': rule.access == "Allow",
+            'priority': rule.priority,
+            'description': rule.description,
+            'provisioning_state': rule.provisioning_state,
+            'protocol': rule.protocol,
+            'direction': rule.direction,
+        }
 
-        security_rule_dict['protocol'] = rule.protocol
-        security_rule_dict['direction'] = rule.direction
+        source_address_prefixes = self._merge_prefixes_or_ports(
+            rule.source_address_prefix,
+            rule.source_address_prefixes
+            or (
+                get_non_provider_id(rule.source_application_security_groups[0].id)
+                if rule.source_application_security_groups
+                else None
+            ),
+        )
 
-        source_address_prefixes = \
-            self._merge_prefixes_or_ports(rule.source_address_prefix,
-                                          rule.source_address_prefixes if rule.source_address_prefixes else
-                                          (get_non_provider_id(rule.source_application_security_groups[0].id) if
-                                           rule.source_application_security_groups else None))
         security_rule_dict['source_address_prefixes'] = source_address_prefixes
         # this is required for the HTML partial to interpret the source as an ASG
-        if rule.source_application_security_groups:
-            security_rule_dict['source_address_prefixes_is_asg'] = True
-        else:
-            security_rule_dict['source_address_prefixes_is_asg'] = False
+        security_rule_dict['source_address_prefixes_is_asg'] = bool(
+            rule.source_application_security_groups
+        )
 
         security_rule_dict['source_port_ranges'] = self._merge_prefixes_or_ports(rule.source_port_range, rule.source_port_ranges)
         security_rule_dict['source_ports'] = ['0-65535'] if '*' in security_rule_dict['source_port_ranges'] else security_rule_dict['source_port_ranges']
@@ -98,7 +108,7 @@ class SecurityGroups(AzureResources):
         return security_rule_dict['id'], security_rule_dict
 
     def _merge_prefixes_or_ports(self, port_range, port_ranges):
-        port_ranges = port_ranges if port_ranges else []
+        port_ranges = port_ranges or []
         if port_range:
             port_ranges.append(port_range)
         return port_ranges

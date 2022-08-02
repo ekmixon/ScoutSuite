@@ -27,10 +27,7 @@ class AWSFacadeUtils:
         results = await AWSFacadeUtils.get_multiple_entities_from_all_pages(
             service, region, session, paginator_name, [entity], **paginator_args)
 
-        if len(results) > 0:
-            return results[entity]
-        else:
-            return []
+        return results[entity] if len(results) > 0 else []
 
     @staticmethod
     async def get_multiple_entities_from_all_pages(service: str, region: str, session: boto3.session.Session,

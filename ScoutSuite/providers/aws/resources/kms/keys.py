@@ -32,9 +32,14 @@ class Keys(AWSCompositeResources):
         key_dict['policy'] = raw_key.get('policy')
 
         if 'metadata' in raw_key:
-            key_dict['creation_date'] = raw_key['metadata']['KeyMetadata']['CreationDate'] if \
-                raw_key['metadata']['KeyMetadata']['CreationDate'] else None
-            key_dict['key_enabled'] = False if raw_key['metadata']['KeyMetadata']['KeyState'] == 'Disabled' else True
+            key_dict['creation_date'] = (
+                raw_key['metadata']['KeyMetadata']['CreationDate'] or None
+            )
+
+            key_dict['key_enabled'] = (
+                raw_key['metadata']['KeyMetadata']['KeyState'] != 'Disabled'
+            )
+
             key_dict['description'] = raw_key['metadata']['KeyMetadata']['Description'] if len(
                 raw_key['metadata']['KeyMetadata']['Description'].strip()) > 0 else None
             key_dict['origin'] = raw_key['metadata']['KeyMetadata']['Origin'] if len(
@@ -60,10 +65,10 @@ class Keys(AWSCompositeResources):
         return key_dict['id'], key_dict
 
     def _parse_alias(self, raw_alias):
-        alias_dict = {
+        return {
             # all KMS Aliases are prefixed with alias/, so we'll strip that off
             'id': get_non_provider_id(raw_alias.get('AliasArn')),
             'name': raw_alias.get('AliasName').split('alias/', 1)[-1],
             'arn': raw_alias.get('AliasArn'),
-            'key_id': raw_alias.get('TargetKeyId')}
-        return alias_dict
+            'key_id': raw_alias.get('TargetKeyId'),
+        }

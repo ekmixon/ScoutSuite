@@ -22,9 +22,10 @@ class LoadBalancers(AWSResources):
                  ['DNSName', 'CreatedTime', 'AvailabilityZones', 'Subnets', 'Scheme', 'attributes'])
 
         load_balancer['security_groups'] = []
-        load_balancer['arn'] = 'arn:aws:elb:{}:{}:load-balancer/{}'.format(self.region,
-                                                                           self.facade.owner_id,
-                                                                           raw_load_balancer.get('LoadBalancerName'))
+        load_balancer[
+            'arn'
+        ] = f"arn:aws:elb:{self.region}:{self.facade.owner_id}:load-balancer/{raw_load_balancer.get('LoadBalancerName')}"
+
         for sg in raw_load_balancer['SecurityGroups']:
             load_balancer['security_groups'].append({'GroupId': sg})
 

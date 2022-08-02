@@ -14,8 +14,7 @@ class Rules(AWSResources):
             self[name] = resource
 
     def _parse_rule(self, raw_rule):
-        rule = {}
-        rule['id'] = raw_rule.pop('ConfigRuleId', None)
+        rule = {'id': raw_rule.pop('ConfigRuleId', None)}
         rule['arn'] = raw_rule.pop('ConfigRuleArn', None)
         rule['name'] = raw_rule.pop('ConfigRuleName', None)
         rule['description'] = raw_rule.pop('Description', None)

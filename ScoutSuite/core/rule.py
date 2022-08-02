@@ -101,35 +101,34 @@ class Rule:
             # Set special values (IP ranges, AWS account ID, ...)
             for condition in definition['conditions']:
                 if type(condition) != list \
-                        or len(condition) == 1 \
-                        or type(condition[2]) == list \
-                        or type(condition[2]) == dict:
+                            or len(condition) == 1 \
+                            or type(condition[2]) == list \
+                            or type(condition[2]) == dict:
                     continue
                 for testcase in testcases:
-                    result = testcase['regex'].match(condition[2])
-                    if result and (testcase['name'] == 'ip_ranges_from_file'
-                                   or testcase['name'] == 'ip_ranges_from_local_file'):
-                        filename = result.groups()[0]
-                        conditions = result.groups()[1] if len(result.groups()) > 1 else []
-                        # TODO :: handle comma here...
-                        if filename == ip_ranges_from_args:
-                            prefixes = []
-                            for filename in ip_ranges:
-                                prefixes += read_ip_ranges(filename, local_file=True, ip_only=True,
-                                                           conditions=conditions)
-                            condition[2] = prefixes
-                            break
+                    if result := testcase['regex'].match(condition[2]):
+                        if testcase['name'] in [
+                            'ip_ranges_from_file',
+                            'ip_ranges_from_local_file',
+                        ]:
+                            filename = result.groups()[0]
+                            conditions = result.groups()[1] if len(result.groups()) > 1 else []
+                                                # TODO :: handle comma here...
+                            if filename == ip_ranges_from_args:
+                                prefixes = []
+                                for filename in ip_ranges:
+                                    prefixes += read_ip_ranges(filename, local_file=True, ip_only=True,
+                                                               conditions=conditions)
+                                condition[2] = prefixes
+                            else:
+                                local_file = testcase['name'] == 'ip_ranges_from_local_file'
+                                condition[2] = read_ip_ranges(filename, local_file=local_file, ip_only=True,
+                                                              conditions=conditions)
                         else:
-                            local_file = True if testcase['name'] == 'ip_ranges_from_local_file' else False
-                            condition[2] = read_ip_ranges(filename, local_file=local_file, ip_only=True,
-                                                          conditions=conditions)
-                            break
-                    elif result:
-                        condition[2] = params[testcase['name']]
+                            condition[2] = params[testcase['name']]
                         break
-
             if len(attributes) == 0:
-                attributes = [attr for attr in definition]
+                attributes = list(definition)
             for attr in attributes:
                 if attr in definition:
                     setattr(self, attr, definition[attr])

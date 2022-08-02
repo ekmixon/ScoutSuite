@@ -15,9 +15,10 @@ class AutoProvisioningSettings(AzureResources):
             self[id] = auto_provisioning_settings
 
     def _parse_auto_provisioning_settings(self, auto_provisioning_settings):
-        auto_provisioning_setting_dict = {}
-        auto_provisioning_setting_dict['id'] = auto_provisioning_settings.id
-        auto_provisioning_setting_dict['name'] = auto_provisioning_settings.name
-        auto_provisioning_setting_dict['auto_provision'] = auto_provisioning_settings.auto_provision
+        auto_provisioning_setting_dict = {
+            'id': auto_provisioning_settings.id,
+            'name': auto_provisioning_settings.name,
+            'auto_provision': auto_provisioning_settings.auto_provision,
+        }
 
         return auto_provisioning_setting_dict['id'], auto_provisioning_setting_dict

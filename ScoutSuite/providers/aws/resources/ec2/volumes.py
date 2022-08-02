@@ -17,7 +17,8 @@ class Volumes(AWSResources):
     def _parse_volume(self, raw_volume):
         raw_volume['id'] = raw_volume.pop('VolumeId')
         raw_volume['name'] = get_name(raw_volume, raw_volume, 'id')
-        raw_volume['arn'] = 'arn:aws:ec2:{}:{}:volume/{}'.format(self.region,
-                                                                 self.facade.owner_id,
-                                                                 raw_volume.get('id'))
+        raw_volume[
+            'arn'
+        ] = f"arn:aws:ec2:{self.region}:{self.facade.owner_id}:volume/{raw_volume.get('id')}"
+
         return raw_volume['id'], raw_volume

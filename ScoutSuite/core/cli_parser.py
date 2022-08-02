@@ -387,12 +387,19 @@ class ScoutSuiteArgumentParser:
         v = vars(args)
         # AWS
         if v.get('provider') == 'aws':
-            if v.get('aws_access_keys') and not (v.get('aws_access_key_id') or v.get('aws_secret_access_key')):
+            if (
+                v.get('aws_access_keys')
+                and not v.get('aws_access_key_id')
+                and not v.get('aws_secret_access_key')
+            ):
                 self.parser.error('When running with --access-keys, you must provide an Access Key ID '
                                   'and Secret Access Key.')
-        # Azure
         elif v.get('provider') == 'azure':
-            if v.get('tenant_id') and not (v.get('service_principal') or v.get('user_account_browser')):
+            if (
+                v.get('tenant_id')
+                and not v.get('service_principal')
+                and not v.get('user_account_browser')
+            ):
                 self.parser.error('--tenant can only be set when using --user-account-browser or --service-principal authentication')
             if v.get('service_principal') and not v.get('tenant_id'):
                 self.parser.error('You must provide --tenant when using --service-principal authentication')

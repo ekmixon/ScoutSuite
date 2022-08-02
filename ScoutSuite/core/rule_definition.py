@@ -25,10 +25,23 @@ class RuleDefinition:
         desription = getattr(self, 'description')
         dlen = len(desription)
         padding = (80 - dlen) // 2 if dlen < 80 else 0
-        value = '-' * 80 + '\n' + ' ' * padding + ' %s' % getattr(self, 'description') + '\n' + '-' * 80 + '\n'
+        value = (
+            '-' * 80
+            + '\n'
+            + ' ' * padding
+            + f" {getattr(self, 'description')}"
+            + '\n'
+            + '-' * 80
+            + '\n'
+        )
+
         quiet_list = ['descriptions', 'rule_dirs', 'rule_types', 'rules_data_path', 'string_definition']
         value += '\n'.join(
-            '{}: {}'.format(attr, str(getattr(self, attr))) for attr in vars(self) if attr not in quiet_list)
+            f'{attr}: {str(getattr(self, attr))}'
+            for attr in vars(self)
+            if attr not in quiet_list
+        )
+
         value += '\n'
         return value
 
@@ -46,7 +59,7 @@ class RuleDefinition:
             try:
                 file_path = os.path.join(rule_dir, self.file_name) if rule_dir else self.file_name
             except Exception as e:
-                print_exception('Failed to load file {}: {}'.format(self.file_name, str(e)))
+                print_exception(f'Failed to load file {self.file_name}: {str(e)}')
             if os.path.isfile(file_path):
                 self.file_path = file_path
                 file_name_valid = True
@@ -65,18 +78,17 @@ class RuleDefinition:
                     if os.path.isfile(self.file_path):
                         file_name_valid = True
                         break
-            else:
-                if os.path.isfile(self.file_path):
-                    file_name_valid = True
+            elif os.path.isfile(self.file_path):
+                file_name_valid = True
         if not file_name_valid:
-            print_error('Error: could not find %s' % self.file_name)
+            print_error(f'Error: could not find {self.file_name}')
         else:
             try:
                 with open(self.file_path) as f:
                     self.string_definition = f.read()
                     self.load_from_string_definition()
             except Exception as e:
-                print_exception('Failed to load rule defined in {}: {}'.format(self.file_name, str(e)))
+                print_exception(f'Failed to load rule defined in {self.file_name}: {str(e)}')
 
     def load_from_string_definition(self):
         try:
@@ -84,4 +96,6 @@ class RuleDefinition:
             for attr in definition:
                 setattr(self, attr, definition[attr])
         except Exception as e:
-            print_exception('Failed to load string definition {}: {}'.format(self.string_definition, str(e)))
+            print_exception(
+                f'Failed to load string definition {self.string_definition}: {str(e)}'
+            )

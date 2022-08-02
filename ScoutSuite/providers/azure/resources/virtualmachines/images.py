@@ -15,8 +15,7 @@ class Images(AzureResources):
             self[id] = image
 
     def _parse_image(self, raw_image):
-        image_dict = {}
-        image_dict['id'] = get_non_provider_id(raw_image.id)
+        image_dict = {'id': get_non_provider_id(raw_image.id)}
         image_dict['name'] = raw_image.name
         image_dict['type'] = raw_image.type
         image_dict['location'] = raw_image.location

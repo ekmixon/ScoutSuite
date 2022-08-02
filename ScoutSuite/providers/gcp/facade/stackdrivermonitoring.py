@@ -11,19 +11,20 @@ class StackdriverMonitoringFacade:
 
     def get_uptime_client(self):
         client_info = ClientInfo(user_agent=get_user_agent())
-        client = stackdrivermonitoring.UptimeCheckServiceClient(client_info=client_info)
-        return client
+        return stackdrivermonitoring.UptimeCheckServiceClient(client_info=client_info)
 
     def get_alerts_client(self):
         client_info = ClientInfo(user_agent=get_user_agent())
-        client = stackdrivermonitoring.AlertPolicyServiceClient(client_info=client_info)
-        return client
+        return stackdrivermonitoring.AlertPolicyServiceClient(client_info=client_info)
 
     async def get_uptime_checks(self, project_id: str):
         try:
             client = self.get_uptime_client()
             name = client.project_path(project_id)
-            return await run_concurrently(lambda: [r for r in client.list_uptime_check_configs(name)])
+            return await run_concurrently(
+                lambda: list(client.list_uptime_check_configs(name))
+            )
+
         except Exception as e:
             if 'is not a workspace' not in getattr(e, 'message', '') and '404' not in str(e):
                 print_exception(f'Failed to retrieve uptime checks: {e}')
@@ -33,7 +34,7 @@ class StackdriverMonitoringFacade:
         try:
             client = self.get_alerts_client()
             name = client.project_path(project_id)
-            return await run_concurrently(lambda: [r for r in client.list_alert_policies(name)])
+            return await run_concurrently(lambda: list(client.list_alert_policies(name)))
         except Exception as e:
             if 'is not a workspace' not in getattr(e, 'message', '') and '404' not in str(e):
                 print_exception(f'Failed to retrieve alert policies: {e}')

@@ -48,14 +48,25 @@ class RDSFacade(AWSBaseFacade):
         client = AWSFacadeUtils.get_client('rds', self.session, region)
         account_id = get_aws_account_id(self.session)
         try:
-            instance_tagset = await run_concurrently(lambda: client.list_tags_for_resource(
-                ResourceName="arn:aws:rds:"+region+":"+account_id+":db:"+instance['DBInstanceIdentifier']))
+            instance_tagset = await run_concurrently(
+                lambda: client.list_tags_for_resource(
+                    ResourceName=f"arn:aws:rds:{region}:{account_id}:db:"
+                    + instance['DBInstanceIdentifier']
+                )
+            )
+
             instance['Tags'] = {x['Key']: x['Value'] for x in instance_tagset['TagList']}
         except ClientError as e:
             if e.response['Error']['Code'] != 'NoSuchTagSet':
-                print_exception('Failed to get db instance tags for {}: {}'.format(instance['DBInstanceIdentifier'], e))
+                print_exception(
+                    f"Failed to get db instance tags for {instance['DBInstanceIdentifier']}: {e}"
+                )
+
         except Exception as e:
-            print_exception('Failed to get db instance tags for {}: {}'.format(instance['DBInstanceIdentifier'], e))
+            print_exception(
+                f"Failed to get db instance tags for {instance['DBInstanceIdentifier']}: {e}"
+            )
+
             instance['Tags'] = {}
 
     async def _get_and_set_instance_clusters(self, instance: {}, region: str):

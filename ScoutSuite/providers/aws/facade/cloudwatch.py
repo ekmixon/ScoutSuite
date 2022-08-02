@@ -18,6 +18,6 @@ class CloudWatch(AWSBaseFacade):
             return await AWSFacadeUtils.get_all_pages('logs', region, self.session, 'describe_metric_filters',
                                                       'metricFilters')
         except Exception as e:
-            print_exception('Failed to get CloudWatch metric filters: {}'.format(e))
+            print_exception(f'Failed to get CloudWatch metric filters: {e}')
             return []
 

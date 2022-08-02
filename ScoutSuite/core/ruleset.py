@@ -33,8 +33,11 @@ class Ruleset:
         rules_dir = [] if rules_dir is None else rules_dir
         ip_ranges = [] if ip_ranges is None else ip_ranges
 
-        self.rules_data_path = os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))) + '/providers/%s/rules' % cloud_provider
+        self.rules_data_path = (
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            + f'/providers/{cloud_provider}/rules'
+        )
+
 
         self.environment_name = environment_name
         self.rule_type = rule_type
@@ -42,8 +45,8 @@ class Ruleset:
         self.filename = self.find_file(filename)
         if not self.filename:
             self.search_ruleset(environment_name)
-        print_debug('Loading ruleset %s' % self.filename)
-        self.name = os.path.basename(self.filename).replace('.json', '') if not name else name
+        print_debug(f'Loading ruleset {self.filename}')
+        self.name = name or os.path.basename(self.filename).replace('.json', '')
         self.load(self.rule_type)
         self.shared_init(ruleset_generator, rules_dir, account_id, ip_ranges)
 
@@ -88,7 +91,7 @@ class Ruleset:
         else:
             self.rules = []
             if not quiet:
-                print_error('Error: the file %s does not exist.' % self.filename)
+                print_error(f'Error: the file {self.filename} does not exist.')
 
     def load_rules(self, file, rule_type):
         file.seek(0)
@@ -154,7 +157,7 @@ class Ruleset:
                                                                                     rule_dirs=rule_dirs)
         # In case of the ruleset generator, list all available built-in rules
         if ruleset_generator:
-            rule_dirs.append(self.rules_data_path + '/findings')
+            rule_dirs.append(f'{self.rules_data_path}/findings')
             rule_filenames = []
             for rule_dir in rule_dirs:
                 rule_filenames += [f for f in os.listdir(rule_dir) if os.path.isfile(os.path.join(rule_dir, f))]
@@ -172,14 +175,21 @@ class Ruleset:
         """
         ruleset_found = False
         if environment_name != 'default':
-            ruleset_file_name = 'ruleset-%s.json' % environment_name
-            ruleset_file_path = os.path.join(self.rules_data_path, 'rulesets/%s' % ruleset_file_name)
-            if os.path.exists(ruleset_file_path):
-                if no_prompt or prompt_yes_no(
-                        "A ruleset whose name matches your environment name was found in %s. "
-                        "Would you like to use it instead of the default one" % ruleset_file_name):
-                    ruleset_found = True
-                    self.filename = ruleset_file_path
+            ruleset_file_name = f'ruleset-{environment_name}.json'
+            ruleset_file_path = os.path.join(
+                self.rules_data_path, f'rulesets/{ruleset_file_name}'
+            )
+
+            if os.path.exists(ruleset_file_path) and (
+                no_prompt
+                or prompt_yes_no(
+                    "A ruleset whose name matches your environment name was found in %s. "
+                    "Would you like to use it instead of the default one"
+                    % ruleset_file_name
+                )
+            ):
+                ruleset_found = True
+                self.filename = ruleset_file_path
         if not ruleset_found:
             self.filename = os.path.join(self.rules_data_path, 'rulesets/default.json')
 
@@ -197,7 +207,7 @@ class Ruleset:
             if not os.path.isfile(filename):
                 filename = os.path.join(self.rules_data_path, filename)
             if not os.path.isfile(filename) and not filename.endswith('.json'):
-                filename = self.find_file('%s.json' % filename, filetype)
+                filename = self.find_file(f'{filename}.json', filetype)
         return filename
 
 
@@ -217,8 +227,11 @@ class TmpRuleset(Ruleset):
         tmp_ruleset_file = tempfile.TemporaryFile('w+t')
         tmp_ruleset_file.write(json.dumps(tmp_ruleset))
 
-        self.rules_data_path = os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))) + '/providers/%s/rules' % cloud_provider
+        self.rules_data_path = (
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            + f'/providers/{cloud_provider}/rules'
+        )
+
 
         self.load_rules(file=tmp_ruleset_file, rule_type='findings')
 

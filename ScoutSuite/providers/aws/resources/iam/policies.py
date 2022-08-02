@@ -9,8 +9,7 @@ class Policies(AWSResources):
             self[name] = resource
 
     def _parse_policy(self, raw_policy):
-        policy = {}
-        policy['id'] = raw_policy.pop('PolicyId')
+        policy = {'id': raw_policy.pop('PolicyId')}
         policy['name'] = raw_policy.pop('PolicyName')
         policy['arn'] = raw_policy.pop('Arn')
         policy['PolicyDocument'] = raw_policy.pop('PolicyDocument')

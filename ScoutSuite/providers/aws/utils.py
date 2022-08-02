@@ -6,20 +6,17 @@ ec2_classic = "EC2-Classic"
 
 def get_caller_identity(session):
     sts_client = session.client("sts")
-    identity = sts_client.get_caller_identity()
-    return identity
+    return sts_client.get_caller_identity()
 
 
 def get_aws_account_id(session):
     caller_identity = get_caller_identity(session)
-    account_id = caller_identity["Arn"].split(":")[4]
-    return account_id
+    return caller_identity["Arn"].split(":")[4]
 
 
 def get_partition_name(session):
     caller_identity = get_caller_identity(session)
-    partition_name = caller_identity["Arn"].split(":")[1]
-    return partition_name
+    return caller_identity["Arn"].split(":")[1]
 
 
 def is_throttled(e):

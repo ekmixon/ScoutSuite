@@ -24,8 +24,8 @@ class AliyunAuthenticationStrategy(AuthenticationStrategy):
 
         try:
 
-            access_key_id = access_key_id if access_key_id else input('Access Key ID:')
-            access_key_secret = access_key_secret if access_key_secret else getpass('Secret Access Key:')
+            access_key_id = access_key_id or input('Access Key ID:')
+            access_key_secret = access_key_secret or getpass('Secret Access Key:')
 
             credentials = AccessKeyCredential(access_key_id=access_key_id, access_key_secret=access_key_secret)
 

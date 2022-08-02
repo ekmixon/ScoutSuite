@@ -22,12 +22,12 @@ class HTMLReport:
 
         self.report_name = report_name
         self.report_name = report_name.replace('/', '_').replace('\\', '_')  # Issue 111
-        self.report_dir = report_dir if report_dir else DEFAULT_REPORT_DIRECTORY
+        self.report_dir = report_dir or DEFAULT_REPORT_DIRECTORY
         self.current_time = datetime.datetime.now(dateutil.tz.tzlocal())
-        self.timestamp = self.current_time.strftime("%Y-%m-%d_%Hh%M%z") if not timestamp else timestamp
+        self.timestamp = timestamp or self.current_time.strftime("%Y-%m-%d_%Hh%M%z")
 
         # exceptions = {} if exceptions is None else exceptions
-        self.exceptions = exceptions if exceptions else {}
+        self.exceptions = exceptions or {}
         self.scout_report_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
         self.html_data_path = os.path.join(self.scout_report_data_path, 'html')
         self.exceptions_encoder = JavaScriptEncoder(self.report_name, report_dir, timestamp)
@@ -44,7 +44,7 @@ class HTMLReport:
                           os.path.isfile(os.path.join(template_dir, f))]
         for filename in template_files:
             try:
-                with open('%s' % filename) as f:
+                with open(f'{filename}') as f:
                     contents = contents + f.read()
             except Exception as e:
                 print_exception(f'Error reading filename {filename}: {e}')
@@ -55,8 +55,8 @@ class HTMLReport:
         template_dir = os.path.join(self.html_data_path, 'conditionals')
         filename = template_dir + filename
         try:
-            with open('%s' % filename) as f:
-                contents = contents + f.read()
+            with open(f'{filename}') as f:
+                contents += f.read()
         except Exception as e:
             print_exception(f'Error reading filename {filename}: {e}')
         return contents
@@ -104,15 +104,15 @@ class ScoutReport(HTMLReport):
     def create_html_report(self, force_write):
         contents = ''
         # Use the script corresponding to the result format
-        contents += self.get_content_from_file('/%s_format.html' % self.result_format)
+        contents += self.get_content_from_file(f'/{self.result_format}_format.html')
         # Use all scripts under html/partials/
         contents += self.get_content_from_folder('partials')
-        contents += self.get_content_from_folder('partials/%s' % self.provider)
+        contents += self.get_content_from_folder(f'partials/{self.provider}')
         # Use all scripts under html/summaries/
         contents += self.get_content_from_folder('summaries')
-        contents += self.get_content_from_folder('summaries/%s' % self.provider)
+        contents += self.get_content_from_folder(f'summaries/{self.provider}')
         new_file, first_line = get_filename('REPORT', self.report_name, self.report_dir)
-        print_info('Creating %s' % new_file)
+        print_info(f'Creating {new_file}')
         if prompt_for_overwrite(new_file, force_write):
             if os.path.exists(new_file):
                 os.remove(new_file)

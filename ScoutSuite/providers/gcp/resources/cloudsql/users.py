@@ -15,7 +15,5 @@ class Users(Resources):
             self[user_name] = user
 
     def _parse_user(self, raw_user):
-        user_dict = {}
-        user_dict['name'] = raw_user['name']
-        user_dict['host'] = raw_user.get('host')
+        user_dict = {'name': raw_user['name'], 'host': raw_user.get('host')}
         return user_dict['name'], user_dict

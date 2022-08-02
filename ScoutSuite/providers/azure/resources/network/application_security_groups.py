@@ -16,13 +16,19 @@ class ApplicationSecurityGroups(AzureResources):
             self[id] = application_security_group
 
     def _parse_application_security_group(self, raw_application_security_group):
-        application_security_group_dict = {}
-        application_security_group_dict['id'] = get_non_provider_id(raw_application_security_group.id)
+        application_security_group_dict = {
+            'id': get_non_provider_id(raw_application_security_group.id)
+        }
+
         application_security_group_dict['name'] = raw_application_security_group.name
         application_security_group_dict['type'] = raw_application_security_group.type
         application_security_group_dict['location'] = raw_application_security_group.location
         if raw_application_security_group.tags is not None:
-            application_security_group_dict['tags'] = ["{}:{}".format(key, value) for key, value in  raw_application_security_group.tags.items()]
+            application_security_group_dict['tags'] = [
+                f"{key}:{value}"
+                for key, value in raw_application_security_group.tags.items()
+            ]
+
         else:
             application_security_group_dict['tags'] = []
         application_security_group_dict['resource_group_name'] = get_resource_group_name(raw_application_security_group.id)

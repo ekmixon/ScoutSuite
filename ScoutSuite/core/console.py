@@ -117,16 +117,14 @@ def prompt(test_input=None):
 
     :return:                            Value typed by user (or passed in argument when testing)
     """
-    if test_input is not None:
-        if type(test_input) == list and len(test_input):
-            choice = test_input.pop(0)
-        elif type(test_input) == list:
-            choice = ''
-        else:
-            choice = test_input
+    if test_input is None:
+        return input()
+    elif type(test_input) == list and len(test_input):
+        return test_input.pop(0)
+    elif type(test_input) == list:
+        return ''
     else:
-        choice = input()
-    return choice
+        return test_input
 
 
 def prompt_overwrite(filename, force_write, test_input=None):
@@ -173,7 +171,7 @@ def prompt_value(question, choices=None, default=None, display_choices=True, dis
     int_choice = 0
 
     if choices and display_choices and not display_indices:
-        question = question + ' (' + '/'.join(choices) + ')'
+        question = f'{question} (' + '/'.join(choices) + ')'
     lap_n = 0
     while True:
         if lap_n >= max_laps:
@@ -183,7 +181,7 @@ def prompt_value(question, choices=None, default=None, display_choices=True, dis
         can_return = False
         # Display the question, choices, and prompt for the answer
         if is_question:
-            question = question + '? '
+            question = f'{question}? '
         print_error(question)
         if choices and display_indices:
             for c in choices:
@@ -193,7 +191,9 @@ def prompt_value(question, choices=None, default=None, display_choices=True, dis
         # Set the default value if empty choice
         if not choice or choice == '':
             if default:
-                if no_confirm or prompt_yes_no('Use the default value (' + default + ')'):
+                if no_confirm or prompt_yes_no(
+                    f'Use the default value ({default})'
+                ):
                     # return default
                     choice = default
                     can_return = True
@@ -201,7 +201,6 @@ def prompt_value(question, choices=None, default=None, display_choices=True, dis
                 can_return = True
             else:
                 print_error('Error: you cannot leave this parameter empty.')
-        # Validate the value against a whitelist of choices
         elif choices:
             user_choices = [item.strip() for item in choice.split(',')]
             if not authorize_list and len(user_choices) > 1:
@@ -215,26 +214,28 @@ def prompt_value(question, choices=None, default=None, display_choices=True, dis
                 else:
                     for c in user_choices:
                         if c not in choices:
-                            print_error('Invalid value (%s).' % c)
+                            print_error(f'Invalid value ({c}).')
                             choice_valid = False
                             break
                 if choice_valid:
                     can_return = True
-        # Validate against a regex
         elif regex:
             if regex.match(choice):
                 # return choice
                 can_return = True
             else:
-                print_error('Error: expected format is: %s' % regex_format)
+                print_error(f'Error: expected format is: {regex_format}')
         else:
             # No automated validation, can attempt to return
             can_return = True
-        if can_return:
-            # Manually confirm that the entered value is correct if needed
-            if no_confirm or prompt_yes_no('You entered "' + choice + '". Is that correct',
-                                           test_input=test_input):
-                return int(int_choice) if return_index else choice
+        if can_return and (
+            no_confirm
+            or prompt_yes_no(
+                'You entered "' + choice + '". Is that correct',
+                test_input=test_input,
+            )
+        ):
+            return int(int_choice) if return_index else choice
 
 
 def prompt_yes_no(question, test_input=None):
@@ -248,11 +249,11 @@ def prompt_yes_no(question, test_input=None):
     """
     count = 0
     while True:
-        print_error(question + ' (y/n)? ')
+        print_error(f'{question} (y/n)? ')
         choice = prompt(test_input).lower()
-        if choice == 'yes' or choice == 'y':
+        if choice in ['yes', 'y']:
             return True
-        elif choice == 'no' or choice == 'n':
+        elif choice in ['no', 'n']:
             return False
         else:
             count += 1

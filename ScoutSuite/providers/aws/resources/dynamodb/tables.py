@@ -14,8 +14,7 @@ class Tables(AWSResources):
             self[name] = resource
 
     def _parse_table(self, raw_table):
-        table_dict = {}
-        table_dict['name'] = raw_table.get('TableName')
+        table_dict = {'name': raw_table.get('TableName')}
         table_dict['id'] = raw_table.get('TableId')
         table_dict['arn'] = raw_table.get('TableArn')
         table_dict['attribute_definitions'] = raw_table.get('AttributeDefinitions')
@@ -30,12 +29,8 @@ class Tables(AWSResources):
         table_dict['tags'] = raw_table.get('tags')
 
         table_dict['automatic_backups_enabled'] = \
-            raw_table['ContinuousBackups']['PointInTimeRecoveryDescription']['PointInTimeRecoveryStatus'] == 'ENABLED' \
-                if 'ContinuousBackups' in raw_table else None
+                raw_table['ContinuousBackups']['PointInTimeRecoveryDescription']['PointInTimeRecoveryStatus'] == 'ENABLED' \
+                    if 'ContinuousBackups' in raw_table else None
 
-        if "SSEDescription" in raw_table:
-            table_dict["sse_enabled"] = True
-        else:
-            table_dict["sse_enabled"] = False
-
+        table_dict["sse_enabled"] = "SSEDescription" in raw_table
         return table_dict['id'], table_dict

@@ -37,14 +37,13 @@ def pass_conditions(all_info, current_path, conditions, unknown_as_pass_conditio
             path_to_value, test_name, test_values = condition
             path_to_value = fix_path_string(all_info, current_path, path_to_value)
             target_obj = get_value_at(all_info, current_path, path_to_value)
-            if type(test_values) != list and type(test_values) != dict:
-                dynamic_value = re_get_value_at.match(test_values)
-                if dynamic_value:
+            if type(test_values) not in [list, dict]:
+                if dynamic_value := re_get_value_at.match(test_values):
                     test_values = get_value_at(all_info, current_path, dynamic_value.groups()[0], True)
             try:
                 res = pass_condition(target_obj, test_name, test_values)
             except Exception as e:
-                res = True if unknown_as_pass_condition else False
+                res = bool(unknown_as_pass_condition)
                 print_exception('Unable to process testcase \'%s\' on value \'%s\', interpreted as %s: %s' %
                                 (test_name, str(target_obj), res, e))
         # Quick exit and + false
@@ -53,7 +52,7 @@ def pass_conditions(all_info, current_path, conditions, unknown_as_pass_conditio
         # Quick exit or + true
         if condition_operator == 'or' and res:
             return True
-    return not condition_operator == 'or'
+    return condition_operator != 'or'
 
 
 def pass_condition(b, test, a):
@@ -78,7 +77,6 @@ def pass_condition(b, test, a):
     elif test == 'notEqual':
         result = (not pass_condition(b, 'equal', a))
 
-    # More/Less tests
     elif test == 'lessThan':
         result = (int(b) < int(a))
     elif test == 'lessOrEqual':
@@ -88,7 +86,6 @@ def pass_condition(b, test, a):
     elif test == 'moreOrEqual':
         result = (int(b) >= int(a))
 
-    # Empty tests
     elif test == 'empty':
         result = ((type(b) == dict and b == {}) or (type(b) == list and b == []) or (type(b) == list and b == [None]))
     elif test == 'notEmpty':
@@ -98,13 +95,11 @@ def pass_condition(b, test, a):
     elif test == 'notNull':
         result = (not pass_condition(b, 'null', a))
 
-    # Boolean tests
     elif test == 'true':
         result = (str(b).lower() == 'true')
-    elif test == 'notTrue' or test == 'false':
+    elif test in ['notTrue', 'false']:
         result = (str(b).lower() == 'false')
 
-    # Object length tests
     elif test == 'lengthLessThan':
         result = (len(b) < int(a))
     elif test == 'lengthMoreThan':
@@ -112,32 +107,29 @@ def pass_condition(b, test, a):
     elif test == 'lengthEqual':
         result = (len(b) == int(a))
 
-    # Dictionary keys tests
     elif test == 'withKey':
         result = (a in b)
     elif test == 'withoutKey':
         result = a not in b
 
-    # String test
     elif test == 'containString':
-        if not type(b) == str:
+        if type(b) != str:
             b = str(b)
-        if not type(a) == str:
+        if type(a) != str:
             a = str(a)
         result = a in b
     elif test == 'notContainString':
-        if not type(b) == str:
+        if type(b) != str:
             b = str(b)
-        if not type(a) == str:
+        if type(a) != str:
             a = str(a)
         result = a not in b
 
-    # List tests
     elif test == 'containAtLeastOneOf':
         result = False
-        if not type(b) == list:
+        if type(b) != list:
             b = [b]
-        if not type(a) == list:
+        if type(a) != list:
             a = [a]
         for c in b:
             if type(c) != dict:
@@ -147,32 +139,22 @@ def pass_condition(b, test, a):
                 break
     elif test == 'containAtLeastOneDifferentFrom':
         result = False
-        if not type(b) == list:
+        if type(b) != list:
             b = [b]
-        if not type(a) == list:
+        if type(a) != list:
             a = [a]
         for c in b:
             if c and c != '' and c not in a:
                 result = True
                 break
     elif test == 'containNoneOf':
-        result = True
-        if not type(b) == list:
+        if type(b) != list:
             b = [b]
-        if not type(a) == list:
+        if type(a) != list:
             a = [a]
-        for c in b:
-            if c in a:
-                result = False
-                break
+        result = all(c not in a for c in b)
     elif test == 'containAtLeastOneMatching':
-        result = False
-        for item in b:
-            if re.match(a, item):
-                result = True
-                break
-
-    # Regex tests
+        result = any(re.match(a, item) for item in b)
     elif test == 'match':
         if type(a) != list:
             a = [a]
@@ -184,7 +166,6 @@ def pass_condition(b, test, a):
     elif test == 'notMatch':
         result = (not pass_condition(b, 'match', a))
 
-    # Date tests
     elif test == 'priorToDate':
         b = dateutil.parser.parse(str(b)).replace(tzinfo=None)
         a = dateutil.parser.parse(str(a)).replace(tzinfo=None)
@@ -196,7 +177,6 @@ def pass_condition(b, test, a):
         age, threshold = __prepare_age_test(a, b)
         result = (age < threshold)
 
-    # CIDR tests
     elif test == 'inSubnets':
         result = False
         grant = netaddr.IPNetwork(b)
@@ -210,12 +190,11 @@ def pass_condition(b, test, a):
     elif test == 'notInSubnets':
         result = (not pass_condition(b, 'inSubnets', a))
 
-    # Port/port ranges tests
     elif test == 'portsInPortList':
         result = False
-        if not type(b) == list:
+        if type(b) != list:
             b = [b]
-        if not type(a) == list:
+        if type(a) != list:
             a = [a]
         for port_range in b:
             if '-' in port_range:
@@ -233,7 +212,6 @@ def pass_condition(b, test, a):
                         result = True
                         break
 
-    # Policy statement tests
     elif test == 'containAction':
         result = False
         if type(b) != dict:
@@ -258,7 +236,6 @@ def pass_condition(b, test, a):
                 result = True
                 break
 
-    # Policy principal tests
     elif test == 'isCrossAccount':
         result = False
         if type(b) != list:
@@ -266,7 +243,7 @@ def pass_condition(b, test, a):
         for c in b:
             if type(c) == dict and 'AWS' in c:
                 c = c['AWS']
-            if c != a and not re.match(r'arn:aws:iam:.*?:%s:.*' % a, c):
+            if c != a and not re.match(f'arn:aws:iam:.*?:{a}:.*', c):
                 result = True
                 break
     elif test == 'isSameAccount':
@@ -274,13 +251,12 @@ def pass_condition(b, test, a):
         if type(b) != list:
             b = [b]
         for c in b:
-            if c == a or re.match(r'arn:aws:iam:.*?:%s:.*' % a, c):
+            if c == a or re.match(f'arn:aws:iam:.*?:{a}:.*', c):
                 result = True
                 break
 
-    # Unknown test case
     else:
-        print_error('Error: unknown test case %s' % test)
+        print_error(f'Error: unknown test case {test}')
         raise Exception
 
     return result
@@ -302,7 +278,7 @@ def fix_path_string(all_info, current_path, path_to_value):
                     break
                 tmp = nested[0].replace('_GET_VALUE_AT_(', '', 1)
             dv = get_value_at(all_info, current_path, tmp)
-            path_to_value = path_to_value.replace('_GET_VALUE_AT_(%s)' % tmp, dv)
+            path_to_value = path_to_value.replace(f'_GET_VALUE_AT_({tmp})', dv)
     return path_to_value
 
 
@@ -321,5 +297,10 @@ def __prepare_age_test(a, b):
     elif unit == 'minutes':
         number *= 60
         unit = 'seconds'
-    age = getattr((datetime.datetime.today() - dateutil.parser.parse(str(b)).replace(tzinfo=None)), unit)
+    age = getattr(
+        datetime.datetime.now()
+        - dateutil.parser.parse(str(b)).replace(tzinfo=None),
+        unit,
+    )
+
     return age, number

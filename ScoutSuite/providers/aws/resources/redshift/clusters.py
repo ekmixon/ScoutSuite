@@ -17,8 +17,9 @@ class Clusters(AWSResources):
     def _parse_cluster(self, raw_cluster):
         name = raw_cluster.pop('ClusterIdentifier')
         raw_cluster['name'] = name
-        raw_cluster['arn'] = 'arn:aws:redshift:{}:{}:cluster/{}'.format(self.region,
-                                                                    self.facade.owner_id,
-                                                                    name)
+        raw_cluster[
+            'arn'
+        ] = f'arn:aws:redshift:{self.region}:{self.facade.owner_id}:cluster/{name}'
+
 
         return name, raw_cluster

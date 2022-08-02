@@ -30,7 +30,7 @@ class AAD(AzureCompositeResources):
             self['users'].update(additional_users)
             self['users_count'] = len(self['users'].values())
         except Exception as e:
-            print_exception('Unable to fetch additional users: {}'.format(e))
+            print_exception(f'Unable to fetch additional users: {e}')
         finally:
             # re-run the finalize method
             await self.finalize()
@@ -48,4 +48,4 @@ class AAD(AzureCompositeResources):
                     if group in self['users'][user]['groups']:
                         self['groups'][group]['users'].append(user)
         except Exception as e:
-            print_exception('Unable to assign group memberships: {}'.format(e))
+            print_exception(f'Unable to assign group memberships: {e}')

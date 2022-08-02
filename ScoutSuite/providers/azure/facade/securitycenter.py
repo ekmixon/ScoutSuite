@@ -22,10 +22,7 @@ class SecurityCenterFacade:
             pricings_list = await run_concurrently(
                 lambda: client.pricings.list()
             )
-            if hasattr(pricings_list, 'value'):
-                return pricings_list.value
-            else:
-                return []
+            return pricings_list.value if hasattr(pricings_list, 'value') else []
         except Exception as e:
             print_exception(f'Failed to retrieve pricings: {e}')
             return []

@@ -26,10 +26,7 @@ class RAMFacade:
         """
         response = await get_response(client=self._client,
                                       request=ListUsersRequest.ListUsersRequest())
-        if response:
-            return response['Users']['User']
-        else:
-            return []
+        return response['Users']['User'] if response else []
 
     async def get_user_details(self, username):
         """
@@ -42,10 +39,7 @@ class RAMFacade:
         request.set_UserName(username)
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['User']
-        else:
-            return []
+        return response['User'] if response else []
 
     async def get_user_api_keys(self, username):
         """
@@ -58,10 +52,7 @@ class RAMFacade:
         request.set_UserName(username)
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['AccessKeys']['AccessKey']
-        else:
-            return []
+        return response['AccessKeys']['AccessKey'] if response else []
 
     async def get_user_api_key_last_usage(self, username, key_id):
         """
@@ -76,10 +67,7 @@ class RAMFacade:
         request.set_UserAccessKeyId(key_id)
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['AccessKeyLastUsed']['LastUsedDate']
-        else:
-            return []
+        return response['AccessKeyLastUsed']['LastUsedDate'] if response else []
 
     async def get_user_mfa_status(self, username):
         """
@@ -96,13 +84,10 @@ class RAMFacade:
         except Exception as e:
             # TODO can't seem to differenciate between a user that has MFA disabled
             # and a user that has MFA enabled but not configured
-            if e.error_code == 'EntityNotExist.User.MFADevice':
-                # ignore, MFA is not configured
-                return False, None
-            else:
-                print_exception('Unable to get MFA status for user {}: {}'.format(username,
-                                                                                  e))
-                return False, None
+            if e.error_code != 'EntityNotExist.User.MFADevice':
+                print_exception(f'Unable to get MFA status for user {username}: {e}')
+            # ignore, MFA is not configured
+            return False, None
         else:
             return True, response['MFADevice']['SerialNumber']
 
@@ -115,10 +100,7 @@ class RAMFacade:
         request = GetPasswordPolicyRequest.GetPasswordPolicyRequest()
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['PasswordPolicy']
-        else:
-            return []
+        return response['PasswordPolicy'] if response else []
 
     async def get_security_policy(self):
         """
@@ -129,10 +111,7 @@ class RAMFacade:
         request = GetSecurityPreferenceRequest.GetSecurityPreferenceRequest()
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['SecurityPreference']
-        else:
-            return []
+        return response['SecurityPreference'] if response else []
 
     async def get_groups(self):
         """
@@ -142,10 +121,7 @@ class RAMFacade:
         """
         response = await get_response(client=self._client,
                                       request=ListGroupsRequest.ListGroupsRequest())
-        if response:
-            return response['Groups']['Group']
-        else:
-            return []
+        return response['Groups']['Group'] if response else []
 
     async def get_group_users(self, group_name):
         """
@@ -157,10 +133,7 @@ class RAMFacade:
         request.set_GroupName(group_name)
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['Users']['User']
-        else:
-            return []
+        return response['Users']['User'] if response else []
 
     async def get_roles(self):
         """
@@ -170,10 +143,7 @@ class RAMFacade:
         """
         response = await get_response(client=self._client,
                                       request=ListRolesRequest.ListRolesRequest())
-        if response:
-            return response['Roles']['Role']
-        else:
-            return []
+        return response['Roles']['Role'] if response else []
 
     async def get_policies(self):
         """
@@ -183,10 +153,7 @@ class RAMFacade:
         """
         response = await get_response(client=self._client,
                                       request=ListPoliciesRequest.ListPoliciesRequest())
-        if response:
-            return response['Policies']['Policy']
-        else:
-            return []
+        return response['Policies']['Policy'] if response else []
 
     async def get_policy_version(self, name, type, version):
         """
@@ -200,10 +167,7 @@ class RAMFacade:
         request.set_VersionId(version)
         response = await get_response(client=self._client,
                                       request=request)
-        if response:
-            return response['PolicyVersion']
-        else:
-            return []
+        return response['PolicyVersion'] if response else []
 
     async def get_policy_entities(self, name, type):
         """

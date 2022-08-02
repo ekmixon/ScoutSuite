@@ -21,7 +21,7 @@ class GKEFacade(GCPBaseFacade):
                                            clusters, project_id=project_id)
             return clusters
         except Exception as e:
-            print_exception('Failed to retrieve clusters: {}'.format(e))
+            print_exception(f'Failed to retrieve clusters: {e}')
             return []
 
     async def _get_and_set_private_google_access_enabled(self, cluster, project_id):
@@ -30,7 +30,10 @@ class GKEFacade(GCPBaseFacade):
             subnetwork = await self._gce_facade.get_subnetwork(project_id, region, cluster['subnetwork'])
             cluster['privateIpGoogleAccess'] = subnetwork.get('privateIpGoogleAccess')
         except Exception as e:
-            print_exception('Failed to retrieve cluster private IP Google access config: {}'.format(e))
+            print_exception(
+                f'Failed to retrieve cluster private IP Google access config: {e}'
+            )
+
             cluster['privateIpGoogleAccess'] = None
 
     # The cluster location is given as <region>-<zone>. See the the following link for more info: 
@@ -38,4 +41,4 @@ class GKEFacade(GCPBaseFacade):
     def _get_cluster_region(self, cluster):
         region_regex = re.compile("(.+)-[^-]+")
         result = region_regex.search(cluster['location'])
-        return result.group(1)
+        return result[1]

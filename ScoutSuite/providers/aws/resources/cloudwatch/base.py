@@ -18,22 +18,23 @@ class CloudWatch(Regions):
 
         # For each region, check if at least one metric filter covers the desired events
         for region in self['regions']:
-            self['regions'][region]['metric_filters_pattern_checks'] = {}
-            # Initialize results at "False"
-            self['regions'][region]['metric_filters_pattern_checks']['unauthorized_api_calls'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['console_login_mfa'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['root_usage'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['iam_policy_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['cloudtrail_configuration_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['console_authentication_failures'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['cmk_deletion'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['s3_policy_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['aws_configuration_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['security_group_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['nacl_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['network_gateways_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['route_table_changes'] = False
-            self['regions'][region]['metric_filters_pattern_checks']['vpc_changes'] = False
+            self['regions'][region]['metric_filters_pattern_checks'] = {
+                'unauthorized_api_calls': False,
+                'console_login_mfa': False,
+                'root_usage': False,
+                'iam_policy_changes': False,
+                'cloudtrail_configuration_changes': False,
+                'console_authentication_failures': False,
+                'cmk_deletion': False,
+                's3_policy_changes': False,
+                'aws_configuration_changes': False,
+                'security_group_changes': False,
+                'nacl_changes': False,
+                'network_gateways_changes': False,
+                'route_table_changes': False,
+                'vpc_changes': False,
+            }
+
             for metric_filter_id, metric_filter in self['regions'][region]['metric_filters'].items():
                 # Check events
                 if metric_filter['pattern'] == "{ ($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\") }":

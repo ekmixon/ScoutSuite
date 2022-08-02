@@ -36,10 +36,12 @@ class Server:
         services = data.get('services')
         stripped_services = {}
         for k1, v1 in services.items():
-            service = {}
-            for k2, v2 in v1.items():
-                if k2 == 'findings' or k2 == 'filters' or count_re.match(k2):
-                    service[k2] = v2
+            service = {
+                k2: v2
+                for k2, v2 in v1.items()
+                if k2 == 'findings' or k2 == 'filters' or count_re.match(k2)
+            }
+
             stripped_services[k1] = service
         data['services'] = stripped_services
         return {'data': data}
@@ -58,7 +60,7 @@ class Server:
         """
         result = self.get_item(self.results, key)
         # Returns only indexes or length if it's a complex type
-        if isinstance(result, dict) or isinstance(result, SqliteDict):
+        if isinstance(result, (dict, SqliteDict)):
             result = {'type': 'dict', 'keys': list(result.keys())}
         elif isinstance(result, list):
             result = {'type': 'list', 'length': len(result)}
@@ -77,7 +79,7 @@ class Server:
         :return:                        The data at the requested location.
         """
         result = self.get_item(self.results, key)
-        if isinstance(result, str) or isinstance(result, int):
+        if isinstance(result, (str, int)):
             return {'data': result}
         return {'data': dict(result)}
 
@@ -104,7 +106,7 @@ class Server:
         start = page * pagesize
         end = min((page + 1) * pagesize, len(result))
 
-        if isinstance(result, dict) or isinstance(result, SqliteDict):
+        if isinstance(result, (dict, SqliteDict)):
             page = {k: result.get(k) for k in sorted(list(result))[start:end]}
         if isinstance(result, list):
             page = result[start:end]
@@ -149,7 +151,7 @@ class Server:
 
         keyparts = key.split('¤')
         for k in keyparts:
-            if isinstance(data, dict) or isinstance(data, SqliteDict):
+            if isinstance(data, (dict, SqliteDict)):
                 data = data.get(k)
             elif isinstance(data, list):
                 data = data[int(k)]

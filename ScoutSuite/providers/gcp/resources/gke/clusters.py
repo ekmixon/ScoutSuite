@@ -18,8 +18,7 @@ class Clusters(Resources):
             self[cluster_id]['node_pools'].fetch_all()
 
     async def _parse_cluster(self, raw_cluster):
-        cluster_dict = {}
-        cluster_dict['id'] = get_non_provider_id(raw_cluster['name'])
+        cluster_dict = {'id': get_non_provider_id(raw_cluster['name'])}
         cluster_dict['name'] = raw_cluster['name']
         cluster_dict['alias_ip_enabled'] = raw_cluster.get('ipAllocationPolicy', {}).get('useIpAliases', False)
         cluster_dict['basic_authentication_enabled'] = self._is_basic_authentication_enabled(raw_cluster)
@@ -45,25 +44,22 @@ class Clusters(Resources):
 
 
     def _get_master_authorized_networks_config(self, raw_cluster):
-        if raw_cluster.get('masterAuthorizedNetworksConfig'):
-            config = raw_cluster.get('masterAuthorizedNetworksConfig')
-            config['includes_public_cidr'] = False
-            for block in config['cidrBlocks']:
-                if block['cidrBlock'] == '0.0.0.0/0':
-                    config['includes_public_cidr'] = True
-            return config
-        else:
+        if not raw_cluster.get('masterAuthorizedNetworksConfig'):
             return {'enabled': False,
                     'cidrBlocks': [],
                     'includes_public_cidr': False
                     }
+        config = raw_cluster.get('masterAuthorizedNetworksConfig')
+        config['includes_public_cidr'] = False
+        for block in config['cidrBlocks']:
+            if block['cidrBlock'] == '0.0.0.0/0':
+                config['includes_public_cidr'] = True
+        return config
 
     def _is_pod_security_policy_enabled(self, raw_cluster):
         if 'podSecurityPolicyConfig' in raw_cluster:
             return raw_cluster['podSecurityPolicyConfig'].get('enabled', False)
         return False
-
-        return raw_cluster['masterAuth'].get('username', '') != ''
 
     def _is_basic_authentication_enabled(self, raw_cluster):
         return raw_cluster['masterAuth'].get('username', '') != ''

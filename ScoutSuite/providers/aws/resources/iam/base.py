@@ -31,7 +31,7 @@ class IAM(AWSCompositeResources):
     async def finalize(self):
         # Update permissions for managed policies
         self['permissions'] = {}
-        policies = [policy for policy in self['policies'].values()]
+        policies = list(self['policies'].values())
         self._parse_inline_policies_permissions('groups')
         self._parse_inline_policies_permissions('users')
         self._parse_inline_policies_permissions('roles')

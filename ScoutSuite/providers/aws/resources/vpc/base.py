@@ -30,19 +30,20 @@ class VPC(Regions):
 def put_cidr_name(current_config, path, current_path, resource_id, callback_args):
     """Add a display name for all known CIDRs."""
 
-    if 'cidrs' in current_config:
-        cidr_list = []
-        for cidr in current_config['cidrs']:
-            if type(cidr) == dict:
-                cidr = cidr['CIDR']
-            if cidr in known_cidrs:
-                cidr_name = known_cidrs[cidr]
-            else:
-                cidr_name = get_cidr_name(
-                    cidr, callback_args['ip_ranges'], callback_args['ip_ranges_name_key'])
-                known_cidrs[cidr] = cidr_name
-            cidr_list.append({'CIDR': cidr, 'CIDRName': cidr_name})
-        current_config['cidrs'] = cidr_list
+    if 'cidrs' not in current_config:
+        return
+    cidr_list = []
+    for cidr in current_config['cidrs']:
+        if type(cidr) == dict:
+            cidr = cidr['CIDR']
+        if cidr in known_cidrs:
+            cidr_name = known_cidrs[cidr]
+        else:
+            cidr_name = get_cidr_name(
+                cidr, callback_args['ip_ranges'], callback_args['ip_ranges_name_key'])
+            known_cidrs[cidr] = cidr_name
+        cidr_list.append({'CIDR': cidr, 'CIDRName': cidr_name})
+    current_config['cidrs'] = cidr_list
 
 
 def get_cidr_name(cidr, ip_ranges_files, ip_ranges_name_key):
@@ -59,5 +60,5 @@ def get_cidr_name(cidr, ip_ranges_files, ip_ranges_name_key):
         ip_prefix = netaddr.IPNetwork(ip_range['ip_prefix'])
         cidr = netaddr.IPNetwork(cidr)
         if cidr in ip_prefix:
-            return 'Unknown CIDR in {} {}'.format(ip_range['service'], ip_range['region'])
+            return f"Unknown CIDR in {ip_range['service']} {ip_range['region']}"
     return 'Unknown CIDR'

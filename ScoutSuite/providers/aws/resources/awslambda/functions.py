@@ -15,8 +15,7 @@ class Functions(AWSResources):
 
     async def _parse_function(self, raw_function):
 
-        function_dict = {}
-        function_dict['name'] = raw_function.get('FunctionName')
+        function_dict = {'name': raw_function.get('FunctionName')}
         function_dict['arn'] = raw_function.get('FunctionArn')
         function_dict['runtime'] = raw_function.get('Runtime')
         function_dict['handler'] = raw_function.get('Handler')
@@ -51,13 +50,11 @@ class Functions(AWSResources):
     async def _add_access_policy_information(self, function_dict):
         access_policy = await self.facade.awslambda.get_access_policy(function_dict['name'], self.region)
 
-        if access_policy:
-            function_dict['access_policy'] = access_policy
-        else:
-            # If there's no policy, set an empty one
-            function_dict['access_policy'] = {'Version': '2012-10-17',
-                                              'Id': 'default',
-                                              'Statement': []}
+        function_dict['access_policy'] = access_policy or {
+            'Version': '2012-10-17',
+            'Id': 'default',
+            'Statement': [],
+        }
 
     async def _add_env_variables(self, function_dict):
         env_variables = await self.facade.awslambda.get_env_variables(function_dict['name'], self.region)

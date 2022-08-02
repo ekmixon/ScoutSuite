@@ -17,10 +17,14 @@ class RegulatoryComplianceResults(AzureResources):
             self[id] = regulatory_compliance_result
 
     def _parse_regulatory_compliance_result(self, raw_regulatory_compliance_result):
-        regulatory_compliance_result_dict = {}
-        regulatory_compliance_result_dict['id'] = get_non_provider_id(raw_regulatory_compliance_result.id)
-        regulatory_compliance_result_dict['name'] = '{} {}'.format(raw_regulatory_compliance_result.standard_name,
-                                                                   raw_regulatory_compliance_result.name)
+        regulatory_compliance_result_dict = {
+            'id': get_non_provider_id(raw_regulatory_compliance_result.id)
+        }
+
+        regulatory_compliance_result_dict[
+            'name'
+        ] = f'{raw_regulatory_compliance_result.standard_name} {raw_regulatory_compliance_result.name}'
+
         regulatory_compliance_result_dict['reference'] = raw_regulatory_compliance_result.name
         regulatory_compliance_result_dict['standard_name'] = raw_regulatory_compliance_result.standard_name
         regulatory_compliance_result_dict['type'] = raw_regulatory_compliance_result.type
@@ -30,5 +34,5 @@ class RegulatoryComplianceResults(AzureResources):
         regulatory_compliance_result_dict['failed_assessments'] = raw_regulatory_compliance_result.failed_assessments
         regulatory_compliance_result_dict['skipped_assessments'] = raw_regulatory_compliance_result.skipped_assessments
         regulatory_compliance_result_dict['additional_properties'] = \
-            raw_regulatory_compliance_result.additional_properties
+                raw_regulatory_compliance_result.additional_properties
         return regulatory_compliance_result_dict['id'], regulatory_compliance_result_dict

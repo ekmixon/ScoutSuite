@@ -13,9 +13,7 @@ class VPCs(AliyunResources):
             self[id] = vpc
 
     def _parse_vpcs(self, raw_vpc):
-        vpc_dict = {}
-        vpc_dict['id'] = raw_vpc.get('VpcId')
-
+        vpc_dict = {'id': raw_vpc.get('VpcId')}
         if raw_vpc.get('VpcName') == '':
             vpc_dict['name'] = raw_vpc.get('VpcId')
         else:

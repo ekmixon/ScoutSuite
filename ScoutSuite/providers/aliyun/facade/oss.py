@@ -14,8 +14,4 @@ class OSSFacade:
         :return: a list of all instances
         """
         client = get_oss_client(credentials=self._credentials)
-        response = client.list_buckets()  # TODO this doesn't follow standards
-        if response:
-            return response.buckets
-        else:
-            return []
+        return response.buckets if (response := client.list_buckets()) else []

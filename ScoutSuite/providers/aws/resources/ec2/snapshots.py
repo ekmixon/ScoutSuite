@@ -15,8 +15,7 @@ class Snapshots(AWSResources):
             self[name] = resource
 
     def _parse_snapshot(self, raw_snapshot):
-        snapshot_dict = {}
-        snapshot_dict['id'] = raw_snapshot.get('SnapshotId')
+        snapshot_dict = {'id': raw_snapshot.get('SnapshotId')}
         snapshot_dict['name'] = get_name(raw_snapshot, raw_snapshot, 'SnapshotId')
         snapshot_dict['description'] = raw_snapshot.get('Description')
         snapshot_dict['public'] = self._is_public(raw_snapshot)
@@ -30,12 +29,16 @@ class Snapshots(AWSResources):
         snapshot_dict['volume_size'] = raw_snapshot.get('VolumeSize')
         snapshot_dict['create_volume_permissions'] = raw_snapshot.get('CreateVolumePermissions')
 
-        snapshot_dict['arn'] = 'arn:aws:ec2:{}:{}:snapshot/{}'.format(self.region,
-                                                                      raw_snapshot.get('OwnerId'),
-                                                                      raw_snapshot.get('SnapshotId'))
+        snapshot_dict[
+            'arn'
+        ] = f"arn:aws:ec2:{self.region}:{raw_snapshot.get('OwnerId')}:snapshot/{raw_snapshot.get('SnapshotId')}"
+
 
         return snapshot_dict['id'], snapshot_dict
 
     @staticmethod
     def _is_public(snapshot):
-        return any([permission.get('Group') == 'all' for permission in snapshot['CreateVolumePermissions']])
+        return any(
+            permission.get('Group') == 'all'
+            for permission in snapshot['CreateVolumePermissions']
+        )

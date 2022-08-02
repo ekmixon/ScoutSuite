@@ -9,8 +9,7 @@ class Roles(AWSResources):
             self[name] = resource
 
     def _parse_role(self, raw_role):
-        role_dict = {}
-        role_dict['id'] = raw_role.get('RoleId')
+        role_dict = {'id': raw_role.get('RoleId')}
         role_dict['name'] = raw_role.get('RoleName')
         role_dict['arn'] = raw_role.get('Arn')
         role_dict['description'] = raw_role.get('Description')

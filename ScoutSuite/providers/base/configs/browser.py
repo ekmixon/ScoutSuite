@@ -29,16 +29,9 @@ def get_object_at(object, path, attribute_name=None):
     o = object
     try:
         for p in path:
-            if type(o) is dict:
-                o = o[p]
-            else:
-                o = getattr(o, p)
-
+            o = o[p] if type(o) is dict else getattr(o, p)
         if attribute_name:
-            if type(o) is dict:
-                return o[attribute_name]
-            else:
-                return getattr(o, attribute_name)
+            return o[attribute_name] if type(o) is dict else getattr(o, attribute_name)
         else:
             return o
     except Exception as e:
@@ -86,7 +79,7 @@ def get_value_at(all_info, current_path, key, to_string=False):
                                                         'i': i})
                     return None
             if len(keys) > len(current_path):
-                target_path = target_path + keys[len(target_path):]
+                target_path += keys[len(target_path):]
         else:
             target_path = copy.deepcopy(current_path)
             target_path.append(key)
@@ -101,9 +94,7 @@ def get_value_at(all_info, current_path, key, to_string=False):
                     target_obj = target_obj[int(p)]
                 elif type(target_obj) == list:
                     target_obj = p
-                elif p == '':
-                    pass
-                else:
+                elif p != '':
                     target_obj = target_obj[p]
             except Exception as e:
                 print_exception(f'Unable to get \"{p}\" from target object {target_obj}: {e}',
@@ -111,7 +102,4 @@ def get_value_at(all_info, current_path, key, to_string=False):
                                                     'target_obj': target_obj,
                                                     'p': p})
                 return None
-    if to_string:
-        return str(target_obj)
-    else:
-        return target_obj
+    return str(target_obj) if to_string else target_obj

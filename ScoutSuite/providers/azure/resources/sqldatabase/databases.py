@@ -32,9 +32,12 @@ class Databases(AzureCompositeResources):
             self[db.name] = {
                 'id': db.name,
                 'name': db.name,
-                'tags': ["{}:{}".format(key, value) for key, value in  db.tags.items()] if db.tags is not None else [],
-                'resource_group_name': get_resource_group_name(db.id)
+                'tags': [f"{key}:{value}" for key, value in db.tags.items()]
+                if db.tags is not None
+                else [],
+                'resource_group_name': get_resource_group_name(db.id),
             }
+
 
         await self._fetch_children_of_all_resources(
             resources=self,

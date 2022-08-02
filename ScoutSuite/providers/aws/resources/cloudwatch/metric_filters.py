@@ -14,9 +14,12 @@ class MetricFilters(AWSResources):
             self[name] = resource
 
     def _parse_metric_filter(self, raw_metric_filter):
-        metric_filter_dict = {}
-        metric_filter_dict['id'] = get_non_provider_id('{}{}'.format(raw_metric_filter.get('filterName'),
-                                                                     raw_metric_filter.get('creationTime')))
+        metric_filter_dict = {
+            'id': get_non_provider_id(
+                f"{raw_metric_filter.get('filterName')}{raw_metric_filter.get('creationTime')}"
+            )
+        }
+
         metric_filter_dict['name'] = raw_metric_filter.get('filterName')
         metric_filter_dict['creation_time'] = raw_metric_filter.get('creationTime')
         metric_filter_dict['pattern'] = raw_metric_filter.get('filterPattern')

@@ -14,13 +14,14 @@ class SecurityContacts(AzureResources):
             self[id] = security_contact
 
     def _parse_security_contact(self, security_contact):
-        security_contact_dict = {}
-        security_contact_dict['id'] = security_contact.id
-        security_contact_dict['name'] = security_contact.name
-        security_contact_dict['email'] = security_contact.email
-        security_contact_dict['phone'] = security_contact.phone
-        security_contact_dict['alert_notifications'] = security_contact.alert_notifications == "On"
-        security_contact_dict['alerts_to_admins'] = security_contact.alerts_to_admins == "On"
-        security_contact_dict['additional_properties'] = security_contact.additional_properties
+        security_contact_dict = {
+            'id': security_contact.id,
+            'name': security_contact.name,
+            'email': security_contact.email,
+            'phone': security_contact.phone,
+            'alert_notifications': security_contact.alert_notifications == "On",
+            'alerts_to_admins': security_contact.alerts_to_admins == "On",
+            'additional_properties': security_contact.additional_properties,
+        }
 
         return security_contact_dict['id'], security_contact_dict

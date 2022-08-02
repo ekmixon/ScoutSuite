@@ -16,8 +16,7 @@ class Buckets(Resources):
             self[bucket_id] = bucket
 
     def _parse_bucket(self, raw_bucket):
-        bucket_dict = {}
-        bucket_dict['id'] = get_non_provider_id(raw_bucket.id)
+        bucket_dict = {'id': get_non_provider_id(raw_bucket.id)}
         bucket_dict['name'] = raw_bucket.name
         bucket_dict['project_id'] = self.project_id
         bucket_dict['project_number'] = raw_bucket.project_number
@@ -27,9 +26,9 @@ class Buckets(Resources):
         bucket_dict['versioning_enabled'] = raw_bucket.versioning_enabled
         bucket_dict['logging_enabled'] = raw_bucket.logging is not None
 
-        iam_configuration = raw_bucket.iam_configuration.get('uniformBucketLevelAccess') or \
-            raw_bucket.iam_configuration.get('bucketPolicyOnly')
-        if iam_configuration:
+        if iam_configuration := raw_bucket.iam_configuration.get(
+            'uniformBucketLevelAccess'
+        ) or raw_bucket.iam_configuration.get('bucketPolicyOnly'):
             bucket_dict['uniform_bucket_level_access'] = iam_configuration.get("enabled", False)
         else:
             bucket_dict['uniform_bucket_level_access'] = None
@@ -54,9 +53,8 @@ class Buckets(Resources):
         return bucket_dict['id'], bucket_dict
 
     def _get_cloudstorage_bucket_iam_member_bindings(self, raw_bucket):
-        bucket_iam_policy = raw_bucket.iam_policy
         member_bindings = {}
-        if bucket_iam_policy:
+        if bucket_iam_policy := raw_bucket.iam_policy:
             for binding in bucket_iam_policy._bindings:
                 if 'legacy' not in binding['role']:
                     for member in binding['members']:

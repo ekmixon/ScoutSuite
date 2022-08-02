@@ -22,8 +22,7 @@ class Instances(GCPCompositeResources):
             self[instance_id]['disks'].fetch_all()
 
     def _parse_instance(self, raw_instance):
-        instance_dict = {}
-        instance_dict['id'] = get_non_provider_id(raw_instance['name'])
+        instance_dict = {'id': get_non_provider_id(raw_instance['name'])}
         instance_dict['project_id'] = self.project_id
         instance_dict['name'] = raw_instance['name']
         instance_dict['description'] = self._get_description(raw_instance)
@@ -51,7 +50,7 @@ class Instances(GCPCompositeResources):
 
     def _get_description(self, raw_instance):
         description = raw_instance.get('description')
-        return description if description else 'N/A'
+        return description or 'N/A'
 
     def _is_block_project_ssh_keys_enabled(self, raw_instance):
         return raw_instance['metadata'].get('block-project-ssh-keys') == 'true'

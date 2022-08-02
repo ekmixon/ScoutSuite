@@ -18,7 +18,4 @@ class VPCFacade:
         client = get_client(credentials=self._credentials, region=region)
         response = await get_response(client=client,
                                       request=DescribeVpcsRequest.DescribeVpcsRequest())
-        if response:
-            return response['Vpcs']['Vpc']
-        else:
-            return []
+        return response['Vpcs']['Vpc'] if response else []

@@ -106,30 +106,32 @@ class AzureFacade:
             finally:
                 subscriptions_list.append(s)
 
-        # All subscriptions
         elif self.all_subscriptions:
             subscriptions_list = accessible_subscriptions_list
 
-        # A specific set of subscriptions
-        elif self.subscription_ids:
+        else:
             # Only include accessible subscriptions
             subscriptions_list = [s for s in accessible_subscriptions_list if
                                   s.subscription_id in self.subscription_ids]
             # Verbose skip
             for s in self.subscription_ids:
-                if not any(subs.subscription_id == s for subs in accessible_subscriptions_list):
-                    raise AuthenticationException('Subscription {} does not exist or is not accessible '
-                                                  'with the provided credentials'.format(s))
+                if all(
+                    subs.subscription_id != s
+                    for subs in accessible_subscriptions_list
+                ):
+                    raise AuthenticationException(
+                        f'Subscription {s} does not exist or is not accessible with the provided credentials'
+                    )
 
-        # Other == error
-        else:
-            raise AuthenticationException('Unknown Azure subscription option')
 
-        if subscriptions_list and len(subscriptions_list) > 0:
+        if subscriptions_list:
             self.subscription_list = subscriptions_list
             if len(subscriptions_list) == 1:
-                print_info('Running against subscription {}'.format(subscriptions_list[0].subscription_id))
+                print_info(
+                    f'Running against subscription {subscriptions_list[0].subscription_id}'
+                )
+
             else:
-                print_info('Running against {} subscriptions'.format(len(subscriptions_list)))
+                print_info(f'Running against {len(subscriptions_list)} subscriptions')
         else:
             raise AuthenticationException('No subscriptions to scan')

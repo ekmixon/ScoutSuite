@@ -15,8 +15,7 @@ class ComplianceResults(AzureResources):
             self[id] = compliance_result
 
     def _parse_compliance_result(self, raw_compliance_result):
-        compliance_result_dict = {}
-        compliance_result_dict['id'] = get_non_provider_id(raw_compliance_result.id)
+        compliance_result_dict = {'id': get_non_provider_id(raw_compliance_result.id)}
         compliance_result_dict['name'] = raw_compliance_result.name
         compliance_result_dict['type'] = raw_compliance_result.type
         compliance_result_dict['resource_status'] = raw_compliance_result.resource_status

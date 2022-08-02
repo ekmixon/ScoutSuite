@@ -10,8 +10,7 @@ _strategies = {
 def import_authentication_strategy(provider):
     strategy_class = _strategies[provider]
     module = __import__(f'ScoutSuite.providers.{provider}.authentication_strategy', fromlist=[strategy_class])
-    authentication_strategy = getattr(module, strategy_class)
-    return authentication_strategy
+    return getattr(module, strategy_class)
 
 
 def get_authentication_strategy(provider: str):

@@ -15,9 +15,8 @@ class Snapshots(AzureResources):
             self[id] = snapshot
 
     def _parse_snapshot(self, raw_snapshot):
-        snapshot_dict = {}
+        snapshot_dict = {'id': get_non_provider_id(raw_snapshot.id)}
 
-        snapshot_dict['id'] = get_non_provider_id(raw_snapshot.id)
         snapshot_dict['unique_id'] = getattr(raw_snapshot, 'unique_id', None)
         snapshot_dict['name'] = raw_snapshot.name
         snapshot_dict['type'] = raw_snapshot.type

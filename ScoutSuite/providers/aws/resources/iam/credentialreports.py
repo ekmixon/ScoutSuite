@@ -16,24 +16,24 @@ class CredentialReports(AWSResources):
         raw_credential_report['password_enabled'] = raw_credential_report['password_enabled']
         raw_credential_report['password_last_used'] = self._sanitize_date(raw_credential_report['password_last_used'])
         raw_credential_report['password_last_changed'] =\
-            self._sanitize_date(raw_credential_report['password_last_changed'])
+                self._sanitize_date(raw_credential_report['password_last_changed'])
         raw_credential_report['access_key_1_active'] = raw_credential_report['access_key_1_active']
         raw_credential_report['access_key_1_last_used_date'] =\
-            self._sanitize_date(raw_credential_report['access_key_1_last_used_date'])
+                self._sanitize_date(raw_credential_report['access_key_1_last_used_date'])
         raw_credential_report['access_key_1_last_rotated'] = \
-            self._sanitize_date(raw_credential_report['access_key_1_last_rotated'])
+                self._sanitize_date(raw_credential_report['access_key_1_last_rotated'])
         raw_credential_report['access_key_2_active'] = raw_credential_report['access_key_2_active']
         raw_credential_report['access_key_2_last_used_date'] =\
-            self._sanitize_date(raw_credential_report['access_key_2_last_used_date'])
+                self._sanitize_date(raw_credential_report['access_key_2_last_used_date'])
         raw_credential_report['access_key_2_last_rotated'] = \
-            self._sanitize_date(raw_credential_report['access_key_2_last_rotated'])
+                self._sanitize_date(raw_credential_report['access_key_2_last_rotated'])
         raw_credential_report['last_used'] = self._compute_last_used(raw_credential_report)
         raw_credential_report['cert_1_active'] = raw_credential_report['cert_1_active']
         raw_credential_report['cert_2_active'] = raw_credential_report['cert_2_active']
 
         if raw_credential_report['mfa_active'] == 'true':
             raw_credential_report['mfa_active_hardware'] = await \
-                self._user_has_hardware_mfa_devices(raw_credential_report['name'])
+                    self._user_has_hardware_mfa_devices(raw_credential_report['name'])
         else:
             raw_credential_report['mfa_active_hardware'] = False
 
@@ -56,13 +56,12 @@ class CredentialReports(AWSResources):
                     # If no EnableDate the device has been disabled
                     if device.get('EnableDate') and device['User']['Arn'][-5:] == ':root':
                         return False
-                return True
             else:
                 devices = await self.facade.iam.get_user_mfa_devices(username)
                 for device in devices:
-                    if device['SerialNumber'][0:4] == 'arn:':
+                    if device['SerialNumber'][:4] == 'arn:':
                         return False
-                return True
+            return True
         except Exception as e:
             print_exception(f'Failed to infer hardware MFA configuration for user {username}: {e}')
 
@@ -71,7 +70,7 @@ class CredentialReports(AWSResources):
         """
         Returns the date if it is not equal to 'N/A' or 'no_information', else returns None
         """
-        return date if date != 'no_information' and date != 'N/A' else None
+        return date if date not in ['no_information', 'N/A'] else None
 
     @staticmethod
     def _compute_last_used(credential_report):
@@ -80,4 +79,4 @@ class CredentialReports(AWSResources):
                  credential_report['access_key_2_last_used_date']]
 
         dates = [date for date in dates if date is not None]
-        return max(dates) if len(dates) > 0 else None
+        return max(dates, default=None)

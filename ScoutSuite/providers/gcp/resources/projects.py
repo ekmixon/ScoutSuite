@@ -29,5 +29,7 @@ class Projects(GCPCompositeResources):
 
     def _set_counts(self):
         for _, child_name in self._children:
-            self[child_name + '_count'] = sum([project[child_name + '_count']
-                                               for project in self['projects'].values()])
+            self[f'{child_name}_count'] = sum(
+                project[f'{child_name}_count']
+                for project in self['projects'].values()
+            )

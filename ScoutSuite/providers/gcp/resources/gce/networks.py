@@ -14,9 +14,11 @@ class Networks(Resources):
             self[network_id] = network
 
     def _parse_network(self, raw_network):
-        network_dict = {}
-        network_dict['id'] = raw_network['id']
-        network_dict['project_id'] = raw_network['selfLink'].split('/')[-4]
+        network_dict = {
+            'id': raw_network['id'],
+            'project_id': raw_network['selfLink'].split('/')[-4],
+        }
+
         network_dict['name'] = raw_network['name']
         network_dict['description'] = self._get_description(raw_network)
         network_dict['creation_timestamp'] = raw_network['creationTimestamp']
@@ -30,4 +32,4 @@ class Networks(Resources):
 
     def _get_description(self, raw_network):
         description = raw_network.get('description')
-        return description if description else 'N/A'
+        return description or 'N/A'

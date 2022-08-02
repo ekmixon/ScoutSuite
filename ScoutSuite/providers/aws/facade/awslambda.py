@@ -22,7 +22,7 @@ class LambdaFacade(AWSBaseFacade):
         except Exception as e:
             # If there's no policy, it will return this exception. Hence why we ignore.
             if "ResourceNotFoundException" not in str(e):
-                print_exception('Failed to get Lambda access policy: {}'.format(e))
+                print_exception(f'Failed to get Lambda access policy: {e}')
             return None
 
     async def get_role_with_managed_policies(self, role_name):
@@ -40,7 +40,7 @@ class LambdaFacade(AWSBaseFacade):
             role['policies'] = managed_policies
             return role
         except Exception as e:
-            print_exception('Failed to get role from managed policies: {}'.format(e))
+            print_exception(f'Failed to get role from managed policies: {e}')
             return None
 
     async def get_env_variables(self, function_name, region):
@@ -50,6 +50,6 @@ class LambdaFacade(AWSBaseFacade):
             if "Environment" in function_configuration and "Variables" in function_configuration["Environment"]:
                 return function_configuration["Environment"]["Variables"]
         except Exception as e:
-            print_exception('Failed to get Lambda function configuration: {}'.format(e))
+            print_exception(f'Failed to get Lambda function configuration: {e}')
         return []
 

@@ -38,12 +38,12 @@ class AzureCredentials:
         else:
             # This is a last resort, e.g. for MSI authentication
             try:
-                h = {'Authorization': 'Bearer {}'.format(self.arm_credentials.token['access_token'])}
+                h = {'Authorization': f"Bearer {self.arm_credentials.token['access_token']}"}
                 r = requests.get('https://management.azure.com/tenants?api-version=2020-01-01', headers=h)
                 r2 = r.json()
                 return r2.get('value')[0].get('tenantId')
             except Exception as e:
-                print_exception('Unable to infer tenant ID: {}'.format(e))
+                print_exception(f'Unable to infer tenant ID: {e}')
                 return None
 
     def get_credentials(self, resource):
@@ -73,15 +73,14 @@ class AzureCredentials:
         Refresh credentials
         """
         print_debug('Refreshing credentials')
-        authority_uri = AUTHORITY_HOST_URI + '/' + self.get_tenant_id()
+        authority_uri = f'{AUTHORITY_HOST_URI}/{self.get_tenant_id()}'
         existing_cache = self.context.cache
         context = adal.AuthenticationContext(authority_uri, cache=existing_cache)
         new_token = context.acquire_token(credentials.token['resource'],
                                           credentials.token['user_id'],
                                           credentials.token['_client_id'])
 
-        new_credentials = AADTokenCredentials(new_token, credentials.token.get('_client_id'))
-        return new_credentials
+        return AADTokenCredentials(new_token, credentials.token.get('_client_id'))
 
 
 class AzureAuthenticationStrategy(AuthenticationStrategy):
@@ -111,43 +110,44 @@ class AzureAuthenticationStrategy(AuthenticationStrategy):
 
             if cli:
                 arm_credentials, subscription_id, tenant_id = \
-                    get_azure_cli_credentials(with_tenant=True)
+                        get_azure_cli_credentials(with_tenant=True)
                 aad_graph_credentials, placeholder_1, placeholder_2 = \
-                    get_azure_cli_credentials(with_tenant=True, resource='https://graph.windows.net')
+                        get_azure_cli_credentials(with_tenant=True, resource='https://graph.windows.net')
 
             elif user_account:
 
-                if not (username and password):
-                    if not programmatic_execution:
-                        username = username if username else input("Username: ")
-                        password = password if password else getpass("Password: ")
-                    else:
+                if not username or not password:
+                    if programmatic_execution:
                         raise AuthenticationException('Username and/or password not set')
 
+                    username = username or input("Username: ")
+                    password = password or getpass("Password: ")
                 arm_credentials = UserPassCredentials(username, password)
                 aad_graph_credentials = UserPassCredentials(username, password,
                                                             resource='https://graph.windows.net')
 
             elif user_account_browser:
 
-                authority_uri = AUTHORITY_HOST_URI + '/' + tenant_id
+                authority_uri = f'{AUTHORITY_HOST_URI}/{tenant_id}'
                 context = adal.AuthenticationContext(authority_uri, api_version=None)
 
                 # Resource Manager
                 resource_uri = 'https://management.core.windows.net/'
                 code = context.acquire_user_code(resource_uri, AZURE_CLI_CLIENT_ID)
-                print_info('To authenticate to the Resource Manager API, use a web browser to '
-                           'access {} and enter the {} code.'.format(code['verification_url'],
-                                                                     code['user_code']))
+                print_info(
+                    f"To authenticate to the Resource Manager API, use a web browser to access {code['verification_url']} and enter the {code['user_code']} code."
+                )
+
                 arm_token = context.acquire_token_with_device_code(resource_uri, code, AZURE_CLI_CLIENT_ID)
                 arm_credentials = AADTokenCredentials(arm_token, AZURE_CLI_CLIENT_ID)
 
                 # AAD Graph
                 resource_uri = 'https://graph.windows.net'
                 code = context.acquire_user_code(resource_uri, AZURE_CLI_CLIENT_ID)
-                print_info('To authenticate to the Azure AD Graph API, use a web browser to '
-                           'access {} and enter the {} code.'.format(code['verification_url'],
-                                                                     code['user_code']))
+                print_info(
+                    f"To authenticate to the Azure AD Graph API, use a web browser to access {code['verification_url']} and enter the {code['user_code']} code."
+                )
+
                 aad_graph_token = context.acquire_token_with_device_code(resource_uri, code, AZURE_CLI_CLIENT_ID)
                 aad_graph_credentials = AADTokenCredentials(aad_graph_token, AZURE_CLI_CLIENT_ID)
 
@@ -219,7 +219,7 @@ class AzureAuthenticationStrategy(AuthenticationStrategy):
 
         except Exception as e:
             if ', AdalError: Unsupported wstrust endpoint version. ' \
-               'Current support version is wstrust2005 or wstrust13.' in e.args:
+                   'Current support version is wstrust2005 or wstrust13.' in e.args:
                 raise AuthenticationException(
                     'You are likely authenticating with a Microsoft Account. '
                     'This authentication mode only support Azure Active Directory principal authentication.')

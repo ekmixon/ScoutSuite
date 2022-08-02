@@ -8,10 +8,7 @@ def is_throttled(e):
     :return:                            True if it's a throttling exception else False
     """
     try:
-        if 'Quota exceeded' in str(e):
-            return True
-        else:
-            return False
+        return 'Quota exceeded' in str(e)
     except Exception as e:
         print_exception(f'Unable to validate exception for throttling: {e}')
         return False

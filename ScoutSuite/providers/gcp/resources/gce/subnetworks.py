@@ -15,11 +15,16 @@ class Subnetworks(Resources):
             self[subnetwork_id] = subnetwork
 
     def _parse_subnetwork(self, raw_subnetwork):
-        subnetwork_dict = {}
-        subnetwork_dict['id'] = raw_subnetwork['id']
-        subnetwork_dict['project_id'] = raw_subnetwork['selfLink'].split('/')[-5]
+        subnetwork_dict = {
+            'id': raw_subnetwork['id'],
+            'project_id': raw_subnetwork['selfLink'].split('/')[-5],
+        }
+
         subnetwork_dict['region'] = raw_subnetwork['region'].split('/')[-1]
-        subnetwork_dict['name'] = "{}-{}".format(raw_subnetwork['name'], subnetwork_dict['region'])
+        subnetwork_dict[
+            'name'
+        ] = f"{raw_subnetwork['name']}-{subnetwork_dict['region']}"
+
         subnetwork_dict['gateway_address'] = raw_subnetwork['gatewayAddress']
         subnetwork_dict['ip_range'] = raw_subnetwork['ipCidrRange']
         subnetwork_dict['creation_timestamp'] = raw_subnetwork['creationTimestamp']

@@ -43,10 +43,7 @@ class GCPProvider(BaseProvider):
         """
         Returns the name of the report using the provider's configuration
         """
-        if self.account_id:
-            return f'gcp-{self.account_id}'
-        else:
-            return 'gcp'
+        return f'gcp-{self.account_id}' if self.account_id else 'gcp'
 
     def _set_account_id(self):
         # All accessible projects
@@ -104,14 +101,14 @@ class GCPProvider(BaseProvider):
                                 instance_disk['snapshots'] = []
                                 for disk in project['snapshots'].values():
                                     if disk['status'] == 'READY' and \
-                                            disk['source_disk_url'] == instance_disk['source_url']:
+                                                disk['source_disk_url'] == instance_disk['source_url']:
                                         instance_disk['snapshots'].append(disk)
 
                                 instance_disk['latest_snapshot'] = max(instance_disk['snapshots'],
                                                                        key=lambda x: x['creation_timestamp']) \
-                                    if instance_disk['snapshots'] else None
+                                        if instance_disk['snapshots'] else None
         except Exception as e:
-            print_exception('Unable to match instances and snapshots: {}'.format(e))
+            print_exception(f'Unable to match instances and snapshots: {e}')
 
     def _match_networks_and_instances(self):
         """
@@ -137,7 +134,7 @@ class GCPProvider(BaseProvider):
                                                                      'instance_zone': instance['zone']})
                                         network_interface['network_id'] = network['id']
         except Exception as e:
-            print_exception('Unable to match instances and networks: {}'.format(e))
+            print_exception(f'Unable to match instances and networks: {e}')
 
     def _match_networks_and_firewalls(self):
         """
@@ -157,7 +154,7 @@ class GCPProvider(BaseProvider):
                                 network['firewalls'].append(firewall['id'])
                                 firewall['network_id'] = network['id']
         except Exception as e:
-            print_exception('Unable to match firewalls and networks: {}'.format(e))
+            print_exception(f'Unable to match firewalls and networks: {e}')
 
     def _match_subnetworks_and_instances(self):
         """
@@ -185,4 +182,4 @@ class GCPProvider(BaseProvider):
                                             network_interface['subnetwork_id'] = subnetwork['id']
                                             network_interface['subnetwork_region'] = subnetwork['region']
         except Exception as e:
-            print_exception('Unable to match instances and subnetworks: {}'.format(e))
+            print_exception(f'Unable to match instances and subnetworks: {e}')

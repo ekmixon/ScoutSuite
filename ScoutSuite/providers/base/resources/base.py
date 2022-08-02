@@ -54,7 +54,7 @@ class CompositeResources(Resources, metaclass=abc.ABCMeta):
         :param scopes: dict that maps resource parent keys to scopes (dict) that should be used to retrieve children
         of each resource.
         """
-        if len(resources) == 0:
+        if not resources:
             return
 
         tasks = {
@@ -87,7 +87,7 @@ class CompositeResources(Resources, metaclass=abc.ABCMeta):
             else:
                 if resource_parent.get(child_name) is None:
                     resource_parent[child_name] = {}
-                    resource_parent[child_name + '_count'] = 0
+                    resource_parent[f'{child_name}_count'] = 0
 
                 resource_parent[child_name].update(child)
-                resource_parent[child_name + '_count'] += len(child)
+                resource_parent[f'{child_name}_count'] += len(child)

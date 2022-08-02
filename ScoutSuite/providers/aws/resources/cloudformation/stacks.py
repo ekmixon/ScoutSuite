@@ -47,10 +47,11 @@ class Stacks(AWSResources):
         if isinstance(template, dict):
             template = template['Resources']
             for group in template.keys():
-                if 'DeletionPolicy' in template[group]:
-                    if template[group]['DeletionPolicy'] == 'Delete':
-                        has_dp = False
-                else:
+                if (
+                    'DeletionPolicy' in template[group]
+                    and template[group]['DeletionPolicy'] == 'Delete'
+                    or 'DeletionPolicy' not in template[group]
+                ):
                     has_dp = False
         if isinstance(template, str):
             if re.match(r'\"DeletionPolicy\"\s*:\s*\"Delete\"', template):

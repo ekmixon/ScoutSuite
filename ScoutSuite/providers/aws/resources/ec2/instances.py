@@ -18,14 +18,16 @@ class EC2Instances(AWSResources):
             self[name] = resource
 
     async def _parse_instance(self, raw_instance):
-        instance = {}
         id = raw_instance['InstanceId']
-        instance['id'] = id
-        instance['arn'] = 'arn:aws:ec2:{}:{}:instance/{}'.format(self.region,
-                                                                 raw_instance['OwnerId'],
-                                                                 raw_instance['InstanceId'])
-        instance['reservation_id'] = raw_instance['ReservationId']
-        instance['availability_zone'] = raw_instance.get('Placement', {}).get('AvailabilityZone')
+        instance = {
+            'id': id,
+            'arn': f"arn:aws:ec2:{self.region}:{raw_instance['OwnerId']}:instance/{raw_instance['InstanceId']}",
+            'reservation_id': raw_instance['ReservationId'],
+            'availability_zone': raw_instance.get('Placement', {}).get(
+                'AvailabilityZone'
+            ),
+        }
+
         instance['monitoring_enabled'] = raw_instance['Monitoring']['State'] == 'enabled'
         instance['user_data'] = await self.facade.ec2.get_instance_user_data(self.region, id)
         instance['user_data_secrets'] = self._identify_user_data_secrets(instance['user_data'])
@@ -37,7 +39,7 @@ class EC2Instances(AWSResources):
         if "IamInstanceProfile" in raw_instance:
             instance['iam_instance_profile_id'] = raw_instance['IamInstanceProfile']['Id']
             instance['iam_instance_profile_arn'] = raw_instance['IamInstanceProfile']['Arn']
-        
+
         instance['network_interfaces'] = {}
         for eni in raw_instance['NetworkInterfaces']:
             nic = {}
@@ -66,20 +68,17 @@ class EC2Instances(AWSResources):
             rsa_private_key_regex = re.compile('(-----BEGIN RSA PRIVATE KEY-----(?s).+?-----END .+?-----)')
             keywords = ['password', 'secret', 'aws_access_key_id', 'aws_secret_access_key', 'aws_session_token']
 
-            aws_access_key_list = aws_access_key_regex.findall(user_data)
-            if aws_access_key_list:
+            if aws_access_key_list := aws_access_key_regex.findall(user_data):
                 secrets['AWS Access Key IDs'] = aws_access_key_list
-            aws_secret_access_key_list = aws_secret_access_key_regex.findall(user_data)
-            if aws_secret_access_key_list:
+            if aws_secret_access_key_list := aws_secret_access_key_regex.findall(
+                user_data
+            ):
                 secrets['AWS Secret Access Keys'] = aws_secret_access_key_list
-            rsa_private_key_list = rsa_private_key_regex.findall(user_data)
-            if rsa_private_key_list:
+            if rsa_private_key_list := rsa_private_key_regex.findall(user_data):
                 secrets['Private Keys'] = rsa_private_key_list
-            word_list = []
-            for word in keywords:
-                if word in user_data.lower():
-                    word_list.append(word)
-            if word_list:
+            if word_list := [
+                word for word in keywords if word in user_data.lower()
+            ]:
                 secrets['Flagged Words'] = word_list
 
         return secrets

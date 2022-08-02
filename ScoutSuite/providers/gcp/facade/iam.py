@@ -58,15 +58,16 @@ class IAMFacade(GCPBaseFacade):
     async def get_role_definition(self, role: str):
         try:
             iam_client = self._get_client()
-            if 'projects/' in role:
-                response = await run_concurrently(
+            return (
+                await run_concurrently(
                     lambda: iam_client.projects().roles().get(name=role).execute()
                 )
-            else:
-                response = await run_concurrently(
+                if 'projects/' in role
+                else await run_concurrently(
                     lambda: iam_client.roles().get(name=role).execute()
                 )
-            return response
+            )
+
         except Exception as e:
             print_exception(f'Failed to retrieve IAM role definition: {e}')
             return {}

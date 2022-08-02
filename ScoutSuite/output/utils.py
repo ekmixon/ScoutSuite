@@ -15,11 +15,11 @@ def prompt_for_yes_no(question):
     """
 
     while True:
-        sys.stdout.write(question + ' (y/n)? ')
+        sys.stdout.write(f'{question} (y/n)? ')
         choice = input().lower()
-        if choice == 'yes' or choice == 'y':
+        if choice in ['yes', 'y']:
             return True
-        elif choice == 'no' or choice == 'n':
+        elif choice in ['no', 'n']:
             return False
         else:
             print_error('\'%s\' is not a valid answer. Enter \'yes\'(y) or \'no\'(n).' % choice)
@@ -41,39 +41,52 @@ def prompt_for_overwrite(filename, force_write):
 
 def get_filename(file_type, file_name=None, file_dir=None, relative_path=False, file_extension=None):
     if file_type == 'REPORT':
-        name = file_name if file_name else 'report'
-        directory = file_dir if file_dir else DEFAULT_REPORT_DIRECTORY
+        name = file_name or 'report'
+        directory = file_dir or DEFAULT_REPORT_DIRECTORY
         extension = 'html'
         first_line = None
     elif file_type == 'RESULTS':
         name = f'scoutsuite_results_{file_name}' if file_name else 'scoutsuite_results'
-        if not relative_path:
-            directory = os.path.join(file_dir if file_dir else DEFAULT_REPORT_DIRECTORY, DEFAULT_REPORT_RESULTS_DIRECTORY)
-        else:
-            directory = DEFAULT_REPORT_RESULTS_DIRECTORY
+        directory = (
+            DEFAULT_REPORT_RESULTS_DIRECTORY
+            if relative_path
+            else os.path.join(
+                file_dir or DEFAULT_REPORT_DIRECTORY,
+                DEFAULT_REPORT_RESULTS_DIRECTORY,
+            )
+        )
+
         extension = 'js'
         first_line = 'scoutsuite_results ='
     elif file_type == 'EXCEPTIONS':
         name = f'scoutsuite_exceptions_{file_name}' if file_name else 'scoutsuite_exceptions'
-        if not relative_path:
-            directory = os.path.join(file_dir if file_dir else DEFAULT_REPORT_DIRECTORY, DEFAULT_REPORT_RESULTS_DIRECTORY)
-        else:
-            directory = DEFAULT_REPORT_RESULTS_DIRECTORY
+        directory = (
+            DEFAULT_REPORT_RESULTS_DIRECTORY
+            if relative_path
+            else os.path.join(
+                file_dir or DEFAULT_REPORT_DIRECTORY,
+                DEFAULT_REPORT_RESULTS_DIRECTORY,
+            )
+        )
+
         extension = 'js'
         first_line = 'exceptions ='
     elif file_type == 'ERRORS':
         name = f'scoutsuite_errors_{file_name}' if file_name else 'scoutsuite_errors'
-        if not relative_path:
-            directory = os.path.join(file_dir if file_dir else DEFAULT_REPORT_DIRECTORY, DEFAULT_REPORT_RESULTS_DIRECTORY)
-        else:
-            directory = DEFAULT_REPORT_RESULTS_DIRECTORY
+        directory = (
+            DEFAULT_REPORT_RESULTS_DIRECTORY
+            if relative_path
+            else os.path.join(
+                file_dir or DEFAULT_REPORT_DIRECTORY,
+                DEFAULT_REPORT_RESULTS_DIRECTORY,
+            )
+        )
+
         extension = 'json'
         first_line = None
     else:
         raise Exception(f'Invalid file type provided: {file_type}')
 
-    full_path = os.path.join(directory,
-                             '{}.{}'.format(name,
-                                            file_extension if file_extension else extension))
+    full_path = os.path.join(directory, f'{name}.{file_extension or extension}')
 
     return full_path, first_line

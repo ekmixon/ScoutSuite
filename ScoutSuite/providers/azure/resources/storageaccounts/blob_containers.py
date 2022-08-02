@@ -19,8 +19,9 @@ class BlobContainers(AzureResources):
             self[id] = blob_container
 
     def _parse_blob_container(self, raw_blob_container):
-        blob_container = {}
-        blob_container['id'] = raw_blob_container.name
-        blob_container['public_access_allowed'] = raw_blob_container.public_access != "None"
+        blob_container = {
+            'id': raw_blob_container.name,
+            'public_access_allowed': raw_blob_container.public_access != "None",
+        }
 
         return blob_container['id'], blob_container

@@ -26,17 +26,17 @@ class Vpcs(AWSCompositeResources):
         )
 
     def _parse_vpc(self, raw_vpc):
-        vpc = {}
-        vpc['id'] = raw_vpc['VpcId']
-        vpc['cidr_block'] = raw_vpc['CidrBlock']
-        vpc['default'] = raw_vpc['IsDefault']
-        vpc['state'] = raw_vpc['State']
-        vpc['arn'] = 'arn:aws:vpc:{}:{}:virtual-private-cloud/{}'.format(self.region,
-                                                                             raw_vpc.get('OwnerId'),
-                                                                             raw_vpc.get('VpcId'))
-        # pull the name from tags
-        name_tag = next((d for i, d in enumerate(raw_vpc.get('Tags', [])) if d.get('Key') == 'Name'), None)
-        if name_tag:
+        vpc = {
+            'id': raw_vpc['VpcId'],
+            'cidr_block': raw_vpc['CidrBlock'],
+            'default': raw_vpc['IsDefault'],
+            'state': raw_vpc['State'],
+            'arn': f"arn:aws:vpc:{self.region}:{raw_vpc.get('OwnerId')}:virtual-private-cloud/{raw_vpc.get('VpcId')}",
+        }
+
+        if name_tag := next(
+            (d for d in raw_vpc.get('Tags', []) if d.get('Key') == 'Name'), None
+        ):
             vpc['name'] = name_tag.get('Value')
         else:
             vpc['name'] = raw_vpc['VpcId']

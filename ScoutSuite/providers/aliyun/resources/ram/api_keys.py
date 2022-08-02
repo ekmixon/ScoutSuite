@@ -13,10 +13,11 @@ class ApiKeys(AliyunResources):
             self[id] = api_key
 
     async def _parse_api_key(self, raw_api_key):
-        api_key = {}
-        api_key['id'] = raw_api_key['AccessKeyId']
-        api_key['creation_datetime'] = raw_api_key['CreateDate']
-        api_key['status'] = raw_api_key['Status']
+        api_key = {
+            'id': raw_api_key['AccessKeyId'],
+            'creation_datetime': raw_api_key['CreateDate'],
+            'status': raw_api_key['Status'],
+        }
 
         last_usage = await self.facade.ram.get_user_api_key_last_usage(self.user['name'], api_key['id'])
         api_key['last_usage_datetime'] = last_usage if last_usage != 'N/A' else None

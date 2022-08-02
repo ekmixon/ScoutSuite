@@ -16,7 +16,8 @@ class AmazonMachineImages(AWSResources):
     def _parse_image(self, raw_image):
         raw_image['id'] = raw_image.get('ImageId')
         raw_image['name'] = raw_image.get('Name')
-        raw_image['arn'] = 'arn:aws:ec2:{}:{}:ami/{}'.format(self.region,
-                                                            raw_image.get('OwnerId'),
-                                                            raw_image.get('ImageId'))
+        raw_image[
+            'arn'
+        ] = f"arn:aws:ec2:{self.region}:{raw_image.get('OwnerId')}:ami/{raw_image.get('ImageId')}"
+
         return raw_image['id'], raw_image
